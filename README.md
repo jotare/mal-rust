@@ -1,18 +1,18 @@
 # mal-rust
 
-`mal` is a Joel Martin project consisting in a set of instructions to
+MAL is a Joel Martin project consisting in a set of instructions to
 build a LISP interpreter in any Turing-complete programming
 language. This projects implements a LISP interpreter following the
-instructions from the `mal`
+instructions from the MAL
 [repository](https://github.com/kanaka/mal) but totally adapted to
 Rust.
 
-`mal` original project has lot of impressive generic code to allow a
+MAL original project has lot of impressive generic code to allow a
 uniform experience implementing the intepreter in any programming
 language, but this is out of scope for this project. As all that code
 is excessive for a single implementation, this project builds a
-language specific version of `mal`. You can think of it as a
-implementation of `mal` as if it were intended to be written only in a
+language specific version of MAL. You can think of it as a
+implementation of MAL as if it were intended to be written only in a
 programming language.
 
 The project follows a linear path, tagging the master branch with the

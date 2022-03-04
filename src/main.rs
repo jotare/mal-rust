@@ -1,26 +1,38 @@
-use std::io::{self,Write};
+use rustyline::Editor;
+use rustyline::error::ReadlineError;
 
 use mal_rust;
 
 
 fn main() {
     let prompt = "mal-rust> ";
+    let history = ".history";
+
+    let mut rl = Editor::<()>::new();
+    if rl.load_history(&history).is_err() {
+        println!("Creating history at '{}'", history);
+    }
 
     loop {
-        print!("{}", prompt);
-        io::stdout().flush().unwrap();
+        let input = rl.readline(&prompt);
 
-        let mut input = String::new();
-        let read = io::stdin().read_line(&mut input)
-            .expect("Failed to read line");
-
-        if read == 0 {          // EOF
-            println!();
-            break
+        match input {
+            Ok(input) => {
+                rl.add_history_entry(input.as_str());
+                let output = mal_rust::rep(&input);
+                if output.len() > 0 {
+                    println!("{}", output);
+                }
+            },
+            Err(ReadlineError::Interrupted | ReadlineError::Eof) => {
+                break;
+            },
+            Err(err) => {
+                println!("Failed to read: {:?}", err);
+                break;
+            }
         }
-
-        let output = mal_rust::rep(&input);
-        print!("{}", output);
-        io::stdout().flush().unwrap();
     }
+
+    rl.save_history(&history).unwrap();
 }
