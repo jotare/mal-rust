@@ -4,6 +4,8 @@ CHANGELOG
 0.2.0
 -----
 - Add initial types (types module) and AST type
+- Add basic lexical and syntax analysis. Read nil, true, false,
+  integers, symbols and lists. (reader module)
 
 0.1.0
 -----
