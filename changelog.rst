@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.2.1
+-----
+- Rename `MalType` to `Type`
+
 0.2.0
 -----
 - Add initial types (types module) and AST type

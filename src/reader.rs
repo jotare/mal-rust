@@ -1,6 +1,6 @@
 use regex::Regex;
 
-use crate::types::{MalType, Ast};
+use crate::types::{Type, Ast};
 
 type Token = String;
 
@@ -31,7 +31,7 @@ impl Reader {
         &self.tokens[self.position]
     }
 
-    fn read_form(&mut self) -> MalType {
+    fn read_form(&mut self) -> Type {
         let token = self.peek();
 
         if token.starts_with("(") {
@@ -41,7 +41,7 @@ impl Reader {
         }
     }
 
-    fn read_list(&mut self) -> MalType {
+    fn read_list(&mut self) -> Type {
         
         let mut items = Vec::new();
 
@@ -61,22 +61,22 @@ impl Reader {
             }
         }
 
-        MalType::List(items)
+        Type::List(items)
     }
 
-    fn read_atom(&mut self) -> MalType {
+    fn read_atom(&mut self) -> Type {
         // String::parse + cast a f64, i32... per canviar de tipus. Alguna forma millor?
 
         let token = self.peek();
 
         if let Ok(number) = token.parse() {
-            MalType::Integer(number)
+            Type::Integer(number)
         } else {
             match token.as_str() {
-                "nil" => MalType::Nil,
-                "true" => MalType::True,
-                "false" => MalType::False,
-                symbol => MalType::Symbol(String::from(symbol)),
+                "nil" => Type::Nil,
+                "true" => Type::True,
+                "false" => Type::False,
+                symbol => Type::Symbol(String::from(symbol)),
             }
         }
     }
@@ -164,28 +164,28 @@ mod tests {
 
     #[test]
     fn test_read_str() {
-        use crate::types::MalType;
+        use crate::types::Type;
 
         assert_eq!(
             read_str("123"),
             Ast::new(
-                MalType::Integer(123)
+                Type::Integer(123)
             )
         );
 
         assert_eq!(
             read_str("abc"),
             Ast::new(
-                MalType::Symbol(String::from("abc"))
+                Type::Symbol(String::from("abc"))
             )
         );
 
         assert_eq!(
             read_str("(123 456)"),
             Ast::new(
-                MalType::List(vec![
-                    Box::new(MalType::Integer(123)),
-                    Box::new(MalType::Integer(456)),
+                Type::List(vec![
+                    Box::new(Type::Integer(123)),
+                    Box::new(Type::Integer(456)),
                 ])
             )
         );
@@ -193,9 +193,9 @@ mod tests {
         assert_eq!(
             read_str("(123 456)"),
             Ast::new(
-                MalType::List(vec![
-                    Box::new(MalType::Integer(123)),
-                    Box::new(MalType::Integer(456)),
+                Type::List(vec![
+                    Box::new(Type::Integer(123)),
+                    Box::new(Type::Integer(456)),
                 ])
             )
         );
@@ -204,13 +204,13 @@ mod tests {
         assert_eq!(
             read_str("( + 2 (* 3 4) )"),
             Ast::new(
-                MalType::List(vec![
-                    Box::new(MalType::Symbol(String::from("+"))),
-                    Box::new(MalType::Integer(2)),
-                    Box::new(MalType::List(vec![
-                        Box::new(MalType::Symbol(String::from("*"))),
-                        Box::new(MalType::Integer(3)),
-                        Box::new(MalType::Integer(4)),
+                Type::List(vec![
+                    Box::new(Type::Symbol(String::from("+"))),
+                    Box::new(Type::Integer(2)),
+                    Box::new(Type::List(vec![
+                        Box::new(Type::Symbol(String::from("*"))),
+                        Box::new(Type::Integer(3)),
+                        Box::new(Type::Integer(4)),
                     ])),
                 ])
             )

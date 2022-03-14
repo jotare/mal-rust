@@ -1,26 +1,26 @@
 #[derive(Debug,PartialEq)]
-pub enum MalType {
+pub enum Type {
     Nil,
     True,
     False,
     Integer(i32),
     Symbol(String),
-    List(Vec<Box<MalType>>),
+    List(Vec<Box<Type>>),
 }
 
 #[derive(Debug,PartialEq)]
 pub struct Ast {
-    root: MalType,
+    root: Type,
 }
 
 impl Ast {
-    pub fn new(root: MalType) -> Ast {
+    pub fn new(root: Type) -> Ast {
         Ast {
             root: root
         }
     }
 
-    pub fn root(&self) -> &MalType {
+    pub fn root(&self) -> &Type {
         &self.root
     }
 }
