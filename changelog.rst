@@ -5,6 +5,7 @@ CHANGELOG
 -----
 - Rename `MalType` to `Type`
 - `True` and `False` are now inside the `Bool` type
+- Rename `Integer` to `Int`
 
 0.2.0
 -----

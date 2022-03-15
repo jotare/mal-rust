@@ -70,7 +70,7 @@ impl Reader {
         let token = self.peek();
 
         if let Ok(number) = token.parse() {
-            Type::Integer(number)
+            Type::Int(number)
         } else {
             match token.as_str() {
                 "nil" => Type::Nil,
@@ -169,7 +169,7 @@ mod tests {
         assert_eq!(
             read_str("123"),
             Ast::new(
-                Type::Integer(123)
+                Type::Int(123)
             )
         );
 
@@ -184,8 +184,8 @@ mod tests {
             read_str("(123 456)"),
             Ast::new(
                 Type::List(vec![
-                    Box::new(Type::Integer(123)),
-                    Box::new(Type::Integer(456)),
+                    Box::new(Type::Int(123)),
+                    Box::new(Type::Int(456)),
                 ])
             )
         );
@@ -194,8 +194,8 @@ mod tests {
             read_str("(123 456)"),
             Ast::new(
                 Type::List(vec![
-                    Box::new(Type::Integer(123)),
-                    Box::new(Type::Integer(456)),
+                    Box::new(Type::Int(123)),
+                    Box::new(Type::Int(456)),
                 ])
             )
         );
@@ -206,11 +206,11 @@ mod tests {
             Ast::new(
                 Type::List(vec![
                     Box::new(Type::Symbol(String::from("+"))),
-                    Box::new(Type::Integer(2)),
+                    Box::new(Type::Int(2)),
                     Box::new(Type::List(vec![
                         Box::new(Type::Symbol(String::from("*"))),
-                        Box::new(Type::Integer(3)),
-                        Box::new(Type::Integer(4)),
+                        Box::new(Type::Int(3)),
+                        Box::new(Type::Int(4)),
                     ])),
                 ])
             )

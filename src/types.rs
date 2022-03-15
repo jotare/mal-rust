@@ -2,7 +2,7 @@
 pub enum Type {
     Nil,
     Bool(bool),
-    Integer(i32),
+    Int(i32),
     Symbol(String),
     List(Vec<Box<Type>>),
 }

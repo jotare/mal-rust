@@ -17,7 +17,7 @@ fn pr_type(t: &Type) -> String {
                 s.push_str("false")
             }
         },
-        Type::Integer(integer) => s.push_str(&format!("{}", integer)),
+        Type::Int(integer) => s.push_str(&format!("{}", integer)),
         Type::Symbol(symbol) => s.push_str(&format!("{}", symbol)),
         Type::List(list) => {
             s.push('(');
