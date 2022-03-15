@@ -74,8 +74,8 @@ impl Reader {
         } else {
             match token.as_str() {
                 "nil" => Type::Nil,
-                "true" => Type::True,
-                "false" => Type::False,
+                "true" => Type::Bool(true),
+                "false" => Type::Bool(false),
                 symbol => Type::Symbol(String::from(symbol)),
             }
         }

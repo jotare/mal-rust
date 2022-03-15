@@ -10,8 +10,13 @@ fn pr_type(t: &Type) -> String {
     let mut s = String::new();
     match t {
         Type::Nil => s.push_str("nil"),
-        Type::True => s.push_str("true"),
-        Type::False => s.push_str("false"),
+        Type::Bool(b) => {
+            if *b {
+                s.push_str("true")
+            } else {
+                s.push_str("false")
+            }
+        },
         Type::Integer(integer) => s.push_str(&format!("{}", integer)),
         Type::Symbol(symbol) => s.push_str(&format!("{}", symbol)),
         Type::List(list) => {

@@ -1,8 +1,7 @@
 #[derive(Debug,PartialEq)]
 pub enum Type {
     Nil,
-    True,
-    False,
+    Bool(bool),
     Integer(i32),
     Symbol(String),
     List(Vec<Box<Type>>),

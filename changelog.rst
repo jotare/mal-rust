@@ -4,6 +4,7 @@ CHANGELOG
 0.2.1
 -----
 - Rename `MalType` to `Type`
+- `True` and `False` are now inside the `Bool` type
 
 0.2.0
 -----
