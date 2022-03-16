@@ -16,19 +16,21 @@ fn pr_type(t: &Type) -> String {
             } else {
                 s.push_str("false")
             }
-        },
+        }
         Type::Int(integer) => s.push_str(&format!("{}", integer)),
         Type::Symbol(symbol) => s.push_str(&format!("{}", symbol)),
         Type::List(list) => {
             s.push('(');
             s.push_str(
-                &list.iter()
+                &list
+                    .iter()
                     .map(|element| pr_type(&*element))
                     .collect::<Vec<String>>()
-                    .join(" ")
+                    .join(" "),
             );
             s.push(')');
         }
+        Type::Fun(_) => {}
     };
     s
 }

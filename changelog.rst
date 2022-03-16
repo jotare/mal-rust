@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.3.0
+-----
+- Add REPL environment with arithmetic operations
+- Implement basic eval
+
 0.2.3
 -----
 - REPL ignore blank lines

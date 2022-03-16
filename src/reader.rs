@@ -1,6 +1,6 @@
 use regex::Regex;
 
-use crate::types::{Type};
+use crate::types::Type;
 
 type Token = String;
 
@@ -42,22 +42,21 @@ impl Reader {
     }
 
     fn read_list(&mut self) -> Type {
-        
         let mut items = Vec::new();
 
-        self.next();            // skip "("
+        self.next(); // skip "("
 
         loop {
             let item = self.peek();
 
             if item == ")" {
-                break
+                break;
             } else {
                 items.push(Box::new(self.read_form()));
             }
 
             if let None = self.next() {
-                break
+                break;
             }
         }
 
@@ -93,10 +92,12 @@ pub fn read_str(input: &str) -> Type {
 /// Tokenize the input stream and returns a list of tokens
 pub fn tokenize(input: &str) -> Vec<Token> {
     let re = Regex::new(
-        "[\\s ,]*(~@|[\\[\\]{}()'`~^@]|\"(?:\\\\.|[^\\\\\"])*\"?|;.*|[^\\s\\[\\]{}('\"`,;)]*)"
-    ).unwrap();
+        "[\\s ,]*(~@|[\\[\\]{}()'`~^@]|\"(?:\\\\.|[^\\\\\"])*\"?|;.*|[^\\s\\[\\]{}('\"`,;)]*)",
+    )
+    .unwrap();
 
-    let tokens = re.captures_iter(input)
+    let tokens = re
+        .captures_iter(input)
         .map(|capture| capture[1].to_owned())
         .collect();
 
@@ -160,18 +161,12 @@ mod tests {
 
         assert_eq!(
             read_str("(123 456)"),
-            Type::List(vec![
-                Box::new(Type::Int(123)),
-                Box::new(Type::Int(456)),
-            ])
+            Type::List(vec![Box::new(Type::Int(123)), Box::new(Type::Int(456)),])
         );
 
         assert_eq!(
             read_str("(123 456)"),
-            Type::List(vec![
-                Box::new(Type::Int(123)),
-                Box::new(Type::Int(456)),
-            ])
+            Type::List(vec![Box::new(Type::Int(123)), Box::new(Type::Int(456)),])
         );
 
         assert_eq!(
