@@ -1,8 +1,8 @@
-use crate::types::{Ast, Type};
+use crate::types::Type;
 
-/// Format an Ast and returns it's string representation
-pub fn pr_str(ast: Ast) -> String {
-    pr_type(&ast.root())
+/// Format an Type and returns it's string representation
+pub fn pr_str(ast: Type) -> String {
+    pr_type(&ast)
 }
 
 /// Recursively format a Type and returns it's string representation

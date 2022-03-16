@@ -1,6 +1,6 @@
 use regex::Regex;
 
-use crate::types::{Type, Ast};
+use crate::types::{Type};
 
 type Token = String;
 
@@ -82,13 +82,12 @@ impl Reader {
     }
 }
 
-
 /// Reads a string of text and return a correct Abstract Syntax Tree
 /// of the tokenized input.
-pub fn read_str(input: &str) -> Ast {
+pub fn read_str(input: &str) -> Type {
     let tokens = tokenize(input);
     let mut reader = Reader::new(tokens);
-    Ast::new(reader.read_form())
+    reader.read_form()
 }
 
 /// Tokenize the input stream and returns a list of tokens
@@ -104,26 +103,15 @@ pub fn tokenize(input: &str) -> Vec<Token> {
     tokens
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_tokenizer() {
-        assert_eq!(
-            tokenize("123"),
-            vec![
-                String::from("123")
-            ]
-        );
+        assert_eq!(tokenize("123"), vec![String::from("123")]);
 
-        assert_eq!(
-            tokenize("abc"),
-            vec![
-                String::from("abc")
-            ]
-        );
+        assert_eq!(tokenize("abc"), vec![String::from("abc")]);
 
         assert_eq!(
             tokenize("(123 456)"),
@@ -166,54 +154,37 @@ mod tests {
     fn test_read_str() {
         use crate::types::Type;
 
-        assert_eq!(
-            read_str("123"),
-            Ast::new(
-                Type::Int(123)
-            )
-        );
+        assert_eq!(read_str("123"), Type::Int(123));
+
+        assert_eq!(read_str("abc"), Type::Symbol(String::from("abc")));
 
         assert_eq!(
-            read_str("abc"),
-            Ast::new(
-                Type::Symbol(String::from("abc"))
-            )
+            read_str("(123 456)"),
+            Type::List(vec![
+                Box::new(Type::Int(123)),
+                Box::new(Type::Int(456)),
+            ])
         );
 
         assert_eq!(
             read_str("(123 456)"),
-            Ast::new(
-                Type::List(vec![
-                    Box::new(Type::Int(123)),
-                    Box::new(Type::Int(456)),
-                ])
-            )
+            Type::List(vec![
+                Box::new(Type::Int(123)),
+                Box::new(Type::Int(456)),
+            ])
         );
-
-        assert_eq!(
-            read_str("(123 456)"),
-            Ast::new(
-                Type::List(vec![
-                    Box::new(Type::Int(123)),
-                    Box::new(Type::Int(456)),
-                ])
-            )
-        );
-
 
         assert_eq!(
             read_str("( + 2 (* 3 4) )"),
-            Ast::new(
-                Type::List(vec![
-                    Box::new(Type::Symbol(String::from("+"))),
-                    Box::new(Type::Int(2)),
-                    Box::new(Type::List(vec![
-                        Box::new(Type::Symbol(String::from("*"))),
-                        Box::new(Type::Int(3)),
-                        Box::new(Type::Int(4)),
-                    ])),
-                ])
-            )
+            Type::List(vec![
+                Box::new(Type::Symbol(String::from("+"))),
+                Box::new(Type::Int(2)),
+                Box::new(Type::List(vec![
+                    Box::new(Type::Symbol(String::from("*"))),
+                    Box::new(Type::Int(3)),
+                    Box::new(Type::Int(4)),
+                ])),
+            ])
         );
     }
 }

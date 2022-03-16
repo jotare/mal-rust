@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.2.2
+-----
+- Remove `Ast` type and use `Type` instead
+
 0.2.1
 -----
 - Rename `MalType` to `Type`
