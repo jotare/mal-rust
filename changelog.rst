@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.2.3
+-----
+- REPL ignore blank lines
+
 0.2.2
 -----
 - Remove `Ast` type and use `Type` instead

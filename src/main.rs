@@ -1,8 +1,7 @@
-use rustyline::Editor;
 use rustyline::error::ReadlineError;
+use rustyline::Editor;
 
 use mal_rust;
-
 
 fn main() {
     let prompt = "mal-rust> ";
@@ -18,15 +17,18 @@ fn main() {
 
         match input {
             Ok(input) => {
+                if input.trim().is_empty() {
+                    continue;
+                }
                 rl.add_history_entry(input.as_str());
                 let output = mal_rust::rep(&input);
                 if output.len() > 0 {
                     println!("{}", output);
                 }
-            },
+            }
             Err(ReadlineError::Interrupted | ReadlineError::Eof) => {
                 break;
-            },
+            }
             Err(err) => {
                 println!("Failed to read: {:?}", err);
                 break;
