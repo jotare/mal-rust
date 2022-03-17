@@ -13,7 +13,7 @@ fn testing_evaluation_of_arithmetic_operations() {
 
 #[test]
 fn test_invalid_function_name() {
-    assert_eq!(mal_rust::rep("(abc 1 2 3)"), "Symbol 'abc' not found in the environment")
+    assert_eq!(mal_rust::rep("(abc 1 2 3)"), "Symbol 'abc' not found in any environment")
 }
 
 #[test]

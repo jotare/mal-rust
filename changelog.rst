@@ -4,6 +4,7 @@ CHANGELOG
 0.5.0
 -----
 - Add env module with `Env` type
+- Use env as REPL environment instead of a HashMap
 
 0.4.0
 -----

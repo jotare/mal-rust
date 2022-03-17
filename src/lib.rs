@@ -3,15 +3,13 @@ mod printer;
 mod reader;
 mod types;
 
-use std::collections::HashMap;
-
-use crate::types::{Args, Function, Ret, Type};
+use crate::{types::{Args, Ret, Type}, env::Env};
 
 fn read(input: &str) -> Type {
     reader::read_str(input)
 }
 
-fn eval(ast: Type, env: HashMap<&str, Function>) -> Ret {
+fn eval(ast: Type, env: &Env) -> Ret {
     match ast {
         Type::List(list) => {
             if list.len() == 0 {
@@ -43,17 +41,17 @@ fn eval(ast: Type, env: HashMap<&str, Function>) -> Ret {
     }
 }
 
-fn eval_ast(ast: Type, env: &HashMap<&str, Function>) -> Ret {
+fn eval_ast(ast: Type, env: &Env) -> Ret {
     match ast {
         Type::Symbol(sym) => match env.get(sym.as_str()) {
-            Some(fun) => Ok(Type::Fun(*fun)),
-            None => Err(format!("Symbol '{}' not found in the environment", sym)),
+            Ok(value) => Ok(value),
+            Err(e) => Err(e),
         },
 
         Type::List(list) => {
             let mut evaluated = Vec::with_capacity(list.len());
             for elem in list {
-                let elem = eval(*elem, env.clone())?;
+                let elem = eval(*elem, env)?;
                 evaluated.push(Box::new(elem));
             }
             Ok(Type::List(evaluated))
@@ -71,8 +69,6 @@ fn print(ast: Result<Type, String>) -> String {
 }
 
 pub fn rep(input: &str) -> String {
-    let mut repl_env: HashMap<&str, Function> = HashMap::new();
-
     fn sum(args: Args) -> Ret {
         match (args.get(0), args.get(1)) {
             (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a + *b)),
@@ -82,7 +78,6 @@ pub fn rep(input: &str) -> String {
             _ => Err(String::from("'+' operation failed. Types must be numeric (Int or Float)")),
         }
     }
-    repl_env.insert("+", sum);
 
     fn sub(args: Args) -> Ret {
         match (args.get(0), args.get(1)) {
@@ -93,7 +88,6 @@ pub fn rep(input: &str) -> String {
             _ => Err(String::from("'-' operation failed. Types must be numeric (Int or Float)")),
         }
     }
-    repl_env.insert("-", sub);
 
     fn mul(args: Args) -> Ret {
         match (args.get(0), args.get(1)) {
@@ -104,7 +98,6 @@ pub fn rep(input: &str) -> String {
             _ => Err(String::from("'*' operation failed. Types must be numeric (Int or Float)")),
         }
     }
-    repl_env.insert("*", mul);
 
     fn div(args: Args) -> Ret {
         match (args.get(0), args.get(1)) {
@@ -115,7 +108,12 @@ pub fn rep(input: &str) -> String {
             _ => Err(String::from("'/' operation failed. Types must be numeric (Int or Float)")),
         }
     }
-    repl_env.insert("/", div);
 
-    print(eval(read(input), repl_env))
+    let mut repl_env = Env::new(None);
+    repl_env.set("+", Type::Fun(sum));
+    repl_env.set("-", Type::Fun(sub));
+    repl_env.set("*", Type::Fun(mul));
+    repl_env.set("/", Type::Fun(div));
+
+    print(eval(read(input), &repl_env))
 }
