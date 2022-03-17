@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.5.0
+-----
+- Add env module with `Env` type
+
 0.4.0
 -----
 - Add `Float` type
