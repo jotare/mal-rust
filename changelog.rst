@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.4.0
+-----
+- Add `Float` type
+- Basic arithmetic operations work with ints and floats
+
 0.3.0
 -----
 - Add REPL environment with arithmetic operations

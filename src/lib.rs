@@ -75,7 +75,10 @@ pub fn rep(input: &str) -> String {
     fn sum(args: Args) -> Ret {
         match (args.get(0), args.get(1)) {
             (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a + *b)),
-            _ => Err(String::from("'+' operation failed. Need two Int arguments")),
+            (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a + *b as f64)),
+            (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 + *b)),
+            (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a + *b)),
+            _ => Err(String::from("'+' operation failed. Types must be numeric (Int or Float)")),
         }
     }
     repl_env.insert("+", sum);
@@ -83,7 +86,10 @@ pub fn rep(input: &str) -> String {
     fn sub(args: Args) -> Ret {
         match (args.get(0), args.get(1)) {
             (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a - *b)),
-            _ => Err(String::from("'-' operation failed. Need two Int arguments")),
+            (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a - *b as f64)),
+            (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 - *b)),
+            (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a - *b)),
+            _ => Err(String::from("'-' operation failed. Types must be numeric (Int or Float)")),
         }
     }
     repl_env.insert("-", sub);
@@ -91,7 +97,10 @@ pub fn rep(input: &str) -> String {
     fn mul(args: Args) -> Ret {
         match (args.get(0), args.get(1)) {
             (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a * *b)),
-            _ => Err(String::from("'*' operation failed. Need two Int arguments")),
+            (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a * *b as f64)),
+            (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 * *b)),
+            (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a * *b)),
+            _ => Err(String::from("'*' operation failed. Types must be numeric (Int or Float)")),
         }
     }
     repl_env.insert("*", mul);
@@ -99,7 +108,10 @@ pub fn rep(input: &str) -> String {
     fn div(args: Args) -> Ret {
         match (args.get(0), args.get(1)) {
             (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a / *b)),
-            _ => Err(String::from("'/' operation failed. Need two Int arguments")),
+            (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a / *b as f64)),
+            (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 / *b)),
+            (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a / *b)),
+            _ => Err(String::from("'/' operation failed. Types must be numeric (Int or Float)")),
         }
     }
     repl_env.insert("/", div);

@@ -18,6 +18,13 @@ fn pr_type(t: &Type) -> String {
             }
         }
         Type::Int(integer) => s.push_str(&format!("{}", integer)),
+        Type::Float(float) => {
+            if float - float.floor() > 0.0 {
+                s.push_str(&format!("{}", float))
+            } else {
+                s.push_str(&format!("{}.0", float))
+            }
+        },
         Type::Symbol(symbol) => s.push_str(&format!("{}", symbol)),
         Type::List(list) => {
             s.push('(');

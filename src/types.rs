@@ -3,6 +3,7 @@ pub enum Type {
     Nil,
     Bool(bool),
     Int(i32),
+    Float(f64),
     Symbol(String),
     List(Vec<Box<Type>>),
     Fun(Function),

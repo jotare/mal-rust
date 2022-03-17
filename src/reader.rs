@@ -68,14 +68,20 @@ impl Reader {
 
         let token = self.peek();
 
-        if let Ok(number) = token.parse() {
-            Type::Int(number)
-        } else {
-            match token.as_str() {
-                "nil" => Type::Nil,
-                "true" => Type::Bool(true),
-                "false" => Type::Bool(false),
-                symbol => Type::Symbol(String::from(symbol)),
+        match token.as_str() {
+            "nil" => Type::Nil,
+            "true" => Type::Bool(true),
+            "false" => Type::Bool(false),
+            other => {
+                if let Ok(number) = token.parse() {
+                    if token.contains(".") {
+                        Type::Float(number)
+                    } else {
+                        Type::Int(number as i32)
+                    }
+                } else {
+                    Type::Symbol(String::from(other))
+                }
             }
         }
     }
