@@ -36,6 +36,39 @@ fn eval(ast: Type, env: &mut Env) -> Ret {
                             Ok(value)
                         }
 
+                        "let*" => {
+                            if list.len() != 3 {
+                                return Err(format!("let* must be called with 2 arguments"));
+                            }
+
+                            let mut scope_env = Env::new(Some(env));
+
+                            let binding_list = match *list[1].clone() {
+                                Type::List(list) => list,
+                                _ => return Err(format!("First let* argument must be a list")),
+                            };
+                            if binding_list.len() % 2 != 0 {
+                                return Err(format!("let* binding list must be composed of pairs"));
+                            }
+                            let mut i = 0;
+                            while i + 1 < binding_list.len() {
+                                let symbol = match *binding_list[i].clone() {
+                                    Type::Symbol(symbol) => symbol,
+                                    _ => return Err(format!("let* variable names must be symbols")),
+                                };
+
+                                let value = *binding_list[i+1].clone();
+                                let value = eval(value, &mut scope_env)?;
+
+                                scope_env.set(&symbol, value);
+
+                                i += 2;
+                            }
+
+                            let scoped_code = *list[2].clone();
+                            eval(scoped_code, &mut scope_env)
+                        }
+
                         _ => {
                             // eval list and call first item as a
                             // function and the rest as its arguments

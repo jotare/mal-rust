@@ -7,6 +7,7 @@ CHANGELOG
 - Use env as REPL environment instead of a HashMap
 - Pass REPL env as argument to `rep` function
 - Implement `def!`
+- Implement `let*`
 
 0.4.0
 -----
