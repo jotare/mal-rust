@@ -2,6 +2,7 @@ use rustyline::error::ReadlineError;
 use rustyline::Editor;
 
 use mal_rust;
+use mal_rust::env::Env;
 
 fn main() {
     let prompt = "mal-rust> ";
@@ -12,6 +13,8 @@ fn main() {
         println!("Creating history at '{}'", history);
     }
 
+    let mut env = Env::new_default();
+
     loop {
         let input = rl.readline(&prompt);
 
@@ -21,7 +24,7 @@ fn main() {
                     continue;
                 }
                 rl.add_history_entry(input.as_str());
-                let output = mal_rust::rep(&input);
+                let output = mal_rust::rep(&input, &mut env);
                 if output.len() > 0 {
                     println!("{}", output);
                 }

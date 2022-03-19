@@ -51,12 +51,13 @@ for test in tests:
     test_name = test["comment"].lower().replace(" ", "_")
     print(f"""\
 #[test]
-fn {test_name}() {{\
+fn {test_name}() {{
+    let mut env = Env::new_default();\
 """)
 
     for case in test["cases"]:
         print(f"""\
-    assert_eq!(mal_rust::rep("{case['input']}"), "{case['output']}");\
+    assert_eq!(mal_rust::rep("{case['input']}", &mut env), "{case['output']}");\
 """)
 
     print("""\

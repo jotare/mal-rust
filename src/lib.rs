@@ -1,15 +1,18 @@
-mod env;
+pub mod env;
 mod printer;
 mod reader;
 mod types;
 
-use crate::{types::{Args, Ret, Type}, env::Env};
+use crate::{
+    env::Env,
+    types::{Ret, Type},
+};
 
 fn read(input: &str) -> Type {
     reader::read_str(input)
 }
 
-fn eval(ast: Type, env: &Env) -> Ret {
+fn eval(ast: Type, env: &mut Env) -> Ret {
     match ast {
         Type::List(list) => {
             if list.len() == 0 {
@@ -17,7 +20,7 @@ fn eval(ast: Type, env: &Env) -> Ret {
             } else {
                 // eval list and call first item as a function and the
                 // rest as its arguments
-                let list = match eval_ast(Type::List(list), &env) {
+                let list = match eval_ast(Type::List(list), env) {
                     Ok(Type::List(list)) => list,
                     Ok(_) => return Err(String::from("Type can't not be a List")),
                     Err(e) => return Err(e),
@@ -37,11 +40,11 @@ fn eval(ast: Type, env: &Env) -> Ret {
                 }
             }
         }
-        other => eval_ast(other, &env),
+        other => eval_ast(other, env),
     }
 }
 
-fn eval_ast(ast: Type, env: &Env) -> Ret {
+fn eval_ast(ast: Type, env: &mut Env) -> Ret {
     match ast {
         Type::Symbol(sym) => match env.get(sym.as_str()) {
             Ok(value) => Ok(value),
@@ -68,52 +71,6 @@ fn print(ast: Result<Type, String>) -> String {
     }
 }
 
-pub fn rep(input: &str) -> String {
-    fn sum(args: Args) -> Ret {
-        match (args.get(0), args.get(1)) {
-            (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a + *b)),
-            (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a + *b as f64)),
-            (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 + *b)),
-            (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a + *b)),
-            _ => Err(String::from("'+' operation failed. Types must be numeric (Int or Float)")),
-        }
-    }
-
-    fn sub(args: Args) -> Ret {
-        match (args.get(0), args.get(1)) {
-            (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a - *b)),
-            (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a - *b as f64)),
-            (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 - *b)),
-            (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a - *b)),
-            _ => Err(String::from("'-' operation failed. Types must be numeric (Int or Float)")),
-        }
-    }
-
-    fn mul(args: Args) -> Ret {
-        match (args.get(0), args.get(1)) {
-            (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a * *b)),
-            (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a * *b as f64)),
-            (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 * *b)),
-            (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a * *b)),
-            _ => Err(String::from("'*' operation failed. Types must be numeric (Int or Float)")),
-        }
-    }
-
-    fn div(args: Args) -> Ret {
-        match (args.get(0), args.get(1)) {
-            (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a / *b)),
-            (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a / *b as f64)),
-            (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 / *b)),
-            (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a / *b)),
-            _ => Err(String::from("'/' operation failed. Types must be numeric (Int or Float)")),
-        }
-    }
-
-    let mut repl_env = Env::new(None);
-    repl_env.set("+", Type::Fun(sum));
-    repl_env.set("-", Type::Fun(sub));
-    repl_env.set("*", Type::Fun(mul));
-    repl_env.set("/", Type::Fun(div));
-
-    print(eval(read(input), &repl_env))
+pub fn rep(input: &str, env: &mut Env) -> String {
+    print(eval(read(input), env))
 }
