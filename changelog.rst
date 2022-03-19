@@ -6,6 +6,7 @@ CHANGELOG
 - Add env module with `Env` type
 - Use env as REPL environment instead of a HashMap
 - Pass REPL env as argument to `rep` function
+- Implement `def!`
 
 0.4.0
 -----

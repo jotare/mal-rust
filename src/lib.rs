@@ -18,26 +18,47 @@ fn eval(ast: Type, env: &mut Env) -> Ret {
             if list.len() == 0 {
                 Ok(Type::List(list))
             } else {
-                // eval list and call first item as a function and the
-                // rest as its arguments
-                let list = match eval_ast(Type::List(list), env) {
-                    Ok(Type::List(list)) => list,
-                    Ok(_) => return Err(String::from("Type can't not be a List")),
-                    Err(e) => return Err(e),
-                };
+                let symbol = *list[0].clone();
+                if let Type::Symbol(symbol) = symbol {
+                    match symbol.as_str() {
+                        "def!" => {
+                            if list.len() != 3 {
+                                return Err(format!("def! must be called with 2 arguments"));
+                            }
 
-                let fun = list
-                    .get(0)
-                    .ok_or(format!("First argument must be a function!"))?;
-                let fun = *fun.clone();
-                match fun {
-                    Type::Fun(fun) => {
-                        let args = list[1..].iter().map(|a| *a.clone()).collect();
-                        let ret = fun(args);
-                        ret
+                            let key = match *list[1].clone() {
+                                Type::Symbol(key) => key.clone(),
+                                _ => return Err(format!("First def! argument must be a symbol")),
+                            };
+                            let value = *list[2].clone();
+                            let value = eval(value, env)?;
+                            env.set(&key, value.clone());
+                            Ok(value)
+                        }
+
+                        _ => {
+                            // eval list and call first item as a
+                            // function and the rest as its arguments
+                            let list = eval_ast(Type::List(list), env)?;
+                            let list = match list {
+                                Type::List(list) => list,
+                                _ => return Err(format!("Type can't not be a List")),
+                            };
+
+                            match *list[0] {
+                                Type::Fun(fun) => {
+                                    let args = list[1..].iter().map(|a| *a.clone()).collect();
+                                    let ret = fun(args);
+                                    ret
+                                }
+                                _ => Err(format!("First argument must be a function!")),
+                            }
+                        }
                     }
-                    _ => Err(format!("First argument must be a function!")),
+                } else {
+                    Err(format!("First argument must be a symbol"))
                 }
+
             }
         }
         other => eval_ast(other, env),
