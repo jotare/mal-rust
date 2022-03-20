@@ -20,32 +20,54 @@ print(f"Using test file: '{test_file}'")
 
 tests = []
 with open(test_file) as f:
-    test = {"cases": [], "comment": "DEFAULT-COMMENT"}
+    tests_content = f.readlines()
 
-    for line in f:
-        if re.match(r"^\s*$", line):  # blank line
-            if test["cases"]:
-                tests.append(test)
-                test = {"cases": [], "comment": "DEFAULT-COMMENT"}
-            continue
+test = {"cases": [], "comment": "DEFAULT-COMMENT"}
+lineno = 0
+while lineno + 1 < len(tests_content):
+    lineno += 1
+    line = tests_content[lineno]
 
-        line = line.strip()
+    if re.match(r"^\s*$", line):  # blank line
+        if test["cases"]:
+            tests.append(test)
+            test = {"cases": [], "comment": "DEFAULT-COMMENT"}
+        continue
 
-        if line.startswith(";;;"):  # ignore comment
-            continue
-        elif line.startswith(";; "):
-            test["comment"] = line[3:]
-        elif line.startswith(";>>> "):
-            continue
-        elif line.startswith(";=>"):
-            test_output = line[3:]
-            test["cases"][-1]["output"] = test_output
-        else:
-            test_input = line
-            test["cases"].append({
-                "input": test_input
-            })
-    tests.append(test)
+    line = line.strip()
+
+    if line.startswith(";;;"):  # ignore comment
+        continue
+    elif line.startswith(";; "):
+        test["comment"] = line[3:].replace("-", "_") \
+                                  .replace("*", "")  \
+                                  .replace("!", "")
+    elif line.startswith(";;"):
+        continue
+    elif line.startswith(";>>> "):
+        continue
+    else:
+        test_input = ""
+        test_output = ""
+        while lineno < len(tests_content):
+            line = tests_content[lineno].strip()
+            if line.startswith(";=>"):
+                test_output += line[3:]
+                break
+            elif line.startswith(";/"):
+                test_output = line[2:]
+                print("ERR: ", test_output)
+                break
+            else:
+                test_input += line + "\n"
+
+            lineno += 1
+
+        test["cases"].append({
+            "input": test_input.strip(),
+            "output": test_output.strip()
+        })
+
 
 for test in tests:
     test_name = test["comment"].lower().replace(" ", "_")
@@ -56,8 +78,14 @@ fn {test_name}() {{
 """)
 
     for case in test["cases"]:
+        input = repr(case["input"]).strip("'")
+        output = repr(case["output"]).strip("'")
+
         print(f"""\
-    assert_eq!(mal_rust::rep("{case['input']}", &mut env), "{case['output']}");\
+    assert_eq!(
+        mal_rust::rep("{input}", &mut env),
+        "{output}"
+    );\
 """)
 
     print("""\
