@@ -120,7 +120,7 @@ fn eval_ast(ast: Type, env: &mut Env) -> Ret {
 
 fn print(ast: Result<Type, String>) -> String {
     match ast {
-        Ok(ast) => printer::pr_str(ast),
+        Ok(ast) => printer::pr_str(ast, true),
         Err(e) => format!("{}", e),
     }
 }

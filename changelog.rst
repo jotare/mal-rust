@@ -6,6 +6,7 @@ CHANGELOG
 - Update `Env::new` to take two new parameters: `binds` and `exprs`
 - Split tests in multiple files
 - Add support to printer to print function values
+- Add `print_readably` argument to print
 
 0.5.0
 -----

@@ -1,12 +1,12 @@
 use crate::types::Type;
 
 /// Format an Type and returns it's string representation
-pub fn pr_str(ast: Type) -> String {
-    pr_type(&ast)
+pub fn pr_str(ast: Type, print_readably: bool) -> String {
+    pr_type(&ast, print_readably)
 }
 
 /// Recursively format a Type and returns it's string representation
-fn pr_type(t: &Type) -> String {
+fn pr_type(t: &Type, print_readably: bool) -> String {
     let mut s = String::new();
     match t {
         Type::Nil => s.push_str("nil"),
@@ -31,7 +31,7 @@ fn pr_type(t: &Type) -> String {
             s.push_str(
                 &list
                     .iter()
-                    .map(|element| pr_type(&*element))
+                    .map(|element| pr_type(&*element, print_readably))
                     .collect::<Vec<String>>()
                     .join(" "),
             );
