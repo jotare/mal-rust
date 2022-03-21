@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.6.0
+-----
+- Update `Env::new` to take two new parameters: `binds` and `exprs`
+
 0.5.0
 -----
 - Add env module with `Env` type

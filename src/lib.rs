@@ -41,7 +41,7 @@ fn eval(ast: Type, env: &mut Env) -> Ret {
                                 return Err(format!("let* must be called with 2 arguments"));
                             }
 
-                            let mut scope_env = Env::new(Some(env));
+                            let mut scope_env = Env::new(Some(env), &[], &[]);
 
                             let binding_list = match *list[1].clone() {
                                 Type::List(list) => list,

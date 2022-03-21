@@ -9,15 +9,23 @@ pub struct Env<'a> {
 }
 
 impl<'a> Env<'a> {
-    pub fn new(outer: Option<&'a Env>) -> Env<'a> {
-        Env {
+    pub fn new(outer: Option<&'a Env>, binds: &[&str], exprs: &[Type]) -> Env<'a> {
+        if binds.len() != exprs.len() {
+            panic!("`binds` and `exprs` must have the same length");
+        }
+
+        let mut env = Env {
             data: HashMap::new(),
             outer: outer,
+        };
+        for i in 0..binds.len() {
+            env.set(binds[i], exprs[i].clone());
         }
+        env
     }
 
     pub fn new_default() -> Env<'a> {
-        let mut env = Env::new(None);
+        let mut env = Env::new(None, &[], &[]);
         env.set("+", Type::Fun(sum));
         env.set("-", Type::Fun(sub));
         env.set("*", Type::Fun(mul));
