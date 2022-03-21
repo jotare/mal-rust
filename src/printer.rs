@@ -37,7 +37,7 @@ fn pr_type(t: &Type) -> String {
             );
             s.push(')');
         }
-        Type::Fun(_) => {}
+        Type::Fun(_) => s.push_str("#<function>"),
     };
     s
 }
