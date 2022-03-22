@@ -27,7 +27,7 @@ fn eval(ast: Type, env: &mut Env) -> Ret {
                             }
 
                             let key = match *list[1].clone() {
-                                Type::Symbol(key) => key.clone(),
+                                Type::Symbol(key) => key,
                                 _ => return Err(format!("First def! argument must be a symbol")),
                             };
                             let value = *list[2].clone();
@@ -67,6 +67,19 @@ fn eval(ast: Type, env: &mut Env) -> Ret {
 
                             let scoped_code = *list[2].clone();
                             eval(scoped_code, &mut scope_env)
+                        }
+
+                        "do" => {
+                            let do_list = Type::List(list[1..].to_vec());
+                            match eval_ast(do_list, env)? {
+                                Type::List(list) => {
+                                    match list.last() {
+                                        Some(element) => Ok(*element.clone()),
+                                        None => Ok(Type::Nil),
+                                    }
+                                }
+                                _ => Err(format!("Malformed do expression")),
+                            }
                         }
 
                         _ => {

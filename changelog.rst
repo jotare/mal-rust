@@ -7,6 +7,7 @@ CHANGELOG
 - Split tests in multiple files
 - Add support to printer to print function values
 - Add `print_readably` argument to print
+- Implement `do`
 
 0.5.0
 -----
