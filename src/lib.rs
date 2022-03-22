@@ -82,6 +82,32 @@ fn eval(ast: Type, env: &mut Env) -> Ret {
                             }
                         }
 
+                        "if" => {
+                            if list.len() < 3 || list.len() > 4  {
+                                return Err(format!("Malformed if expression"));
+                            }
+
+                            let cond = *list.get(1).unwrap().clone();
+                            let if_clause = *list.get(2).unwrap().clone();
+                            let else_clause = list.get(3);
+
+                            let cond = match eval(cond, env)? {
+                                Type::Bool(false) | Type::Nil => false,
+                                _ => true
+                            };
+
+                            if cond {
+                                eval(if_clause, env)
+                            } else {
+                                if else_clause.is_some() {
+                                    let else_clause = *else_clause.unwrap().clone();
+                                    eval(else_clause, env)
+                                } else {
+                                    Ok(Type::Nil)
+                                }
+                            }
+                        }
+
                         _ => {
                             // eval list and call first item as a
                             // function and the rest as its arguments
