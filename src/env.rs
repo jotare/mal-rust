@@ -34,7 +34,7 @@ impl<'a> Env<'a> {
     }
 
     pub fn set(&mut self, symbol: &str, value: Type) {
-        self.data.insert(String::from(symbol), value);
+        self.data.insert(symbol.to_owned(), value);
     }
 
     pub fn find(&self, symbol: &str) -> Option<&'a Env> {

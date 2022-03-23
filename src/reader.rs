@@ -80,7 +80,7 @@ impl Reader {
                         Type::Int(number as i32)
                     }
                 } else {
-                    Type::Symbol(String::from(other))
+                    Type::Symbol(other.to_owned())
                 }
             }
         }
