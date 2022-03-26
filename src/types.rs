@@ -1,3 +1,7 @@
+use std::rc::Rc;
+
+use crate::env::Env;
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Type {
     Nil,
@@ -7,6 +11,11 @@ pub enum Type {
     Symbol(String),
     List(Vec<Box<Type>>),
     Fun(Function),
+    Closure {
+        env: Rc<Env>,
+        params: Box<Type>,
+        body: Box<Type>,
+    }
 }
 
 pub type Args = Vec<Type>;

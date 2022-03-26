@@ -38,6 +38,7 @@ fn pr_type(t: &Type, print_readably: bool) -> String {
             s.push(')');
         }
         Type::Fun(_) => s.push_str("#<function>"),
+        Type::Closure { .. } => s.push_str("#<closure>"),
     };
     s
 }

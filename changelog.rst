@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.7.0
+-----
+- Implement `fn*` and the Closure type
+
 0.6.1
 -----
 - Use Rc in Env outer environment instead of references with lifetime
