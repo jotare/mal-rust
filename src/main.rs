@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 
@@ -13,7 +15,7 @@ fn main() {
         println!("Creating history at '{}'", history);
     }
 
-    let mut env = Env::new_default();
+    let mut env = Rc::new(Env::new_default());
 
     loop {
         let input = rl.readline(&prompt);

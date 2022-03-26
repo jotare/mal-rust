@@ -1,18 +1,20 @@
-pub mod env;
-mod printer;
-mod reader;
-mod types;
+use std::rc::Rc;
 
 use crate::{
     env::Env,
     types::{Ret, Type},
 };
 
+pub mod env;
+mod printer;
+mod reader;
+mod types;
+
 fn read(input: &str) -> Type {
     reader::read_str(input)
 }
 
-fn eval(ast: Type, env: &mut Env) -> Ret {
+fn eval(ast: Type, env: &mut Rc<Env>) -> Ret {
     match ast {
         Type::List(list) => {
             if list.len() == 0 {
@@ -32,7 +34,7 @@ fn eval(ast: Type, env: &mut Env) -> Ret {
                             };
                             let value = *list[2].clone();
                             let value = eval(value, env)?;
-                            env.set(&key, value.clone());
+                            Rc::get_mut(env).unwrap().set(&key, value.clone());
                             Ok(value)
                         }
 
@@ -41,7 +43,7 @@ fn eval(ast: Type, env: &mut Env) -> Ret {
                                 return Err(format!("let* must be called with 2 arguments"));
                             }
 
-                            let mut scope_env = Env::new(Some(env), &[], &[]);
+                            let mut scope_env = Rc::new(Env::new(Some(Rc::clone(env)), &[], &[]));
 
                             let binding_list = match *list[1].clone() {
                                 Type::List(list) => list,
@@ -54,13 +56,15 @@ fn eval(ast: Type, env: &mut Env) -> Ret {
                             while i + 1 < binding_list.len() {
                                 let symbol = match *binding_list[i].clone() {
                                     Type::Symbol(symbol) => symbol,
-                                    _ => return Err(format!("let* variable names must be symbols")),
+                                    _ => {
+                                        return Err(format!("let* variable names must be symbols"))
+                                    }
                                 };
 
-                                let value = *binding_list[i+1].clone();
+                                let value = *binding_list[i + 1].clone();
                                 let value = eval(value, &mut scope_env)?;
 
-                                scope_env.set(&symbol, value);
+                                Rc::get_mut(&mut scope_env).unwrap().set(&symbol, value);
 
                                 i += 2;
                             }
@@ -72,18 +76,16 @@ fn eval(ast: Type, env: &mut Env) -> Ret {
                         "do" => {
                             let do_list = Type::List(list[1..].to_vec());
                             match eval_ast(do_list, env)? {
-                                Type::List(list) => {
-                                    match list.last() {
-                                        Some(element) => Ok(*element.clone()),
-                                        None => Ok(Type::Nil),
-                                    }
-                                }
+                                Type::List(list) => match list.last() {
+                                    Some(element) => Ok(*element.clone()),
+                                    None => Ok(Type::Nil),
+                                },
                                 _ => Err(format!("Malformed do expression")),
                             }
                         }
 
                         "if" => {
-                            if list.len() < 3 || list.len() > 4  {
+                            if list.len() < 3 || list.len() > 4 {
                                 return Err(format!("Malformed if expression"));
                             }
 
@@ -93,7 +95,7 @@ fn eval(ast: Type, env: &mut Env) -> Ret {
 
                             let cond = match eval(cond, env)? {
                                 Type::Bool(false) | Type::Nil => false,
-                                _ => true
+                                _ => true,
                             };
 
                             if cond {
@@ -130,14 +132,13 @@ fn eval(ast: Type, env: &mut Env) -> Ret {
                 } else {
                     Err(format!("First argument must be a symbol"))
                 }
-
             }
         }
         other => eval_ast(other, env),
     }
 }
 
-fn eval_ast(ast: Type, env: &mut Env) -> Ret {
+fn eval_ast(ast: Type, env: &mut Rc<Env>) -> Ret {
     match ast {
         Type::Symbol(sym) => match env.get(sym.as_str()) {
             Ok(value) => Ok(value),
@@ -164,6 +165,6 @@ fn print(ast: Result<Type, String>) -> String {
     }
 }
 
-pub fn rep(input: &str, env: &mut Env) -> String {
+pub fn rep(input: &str, env: &mut Rc<Env>) -> String {
     print(eval(read(input), env))
 }
