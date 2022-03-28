@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::env::Env;
@@ -12,7 +13,7 @@ pub enum Type {
     List(Vec<Box<Type>>),
     Fun(Function),
     Closure {
-        env: Rc<Env>,
+        env: Rc<RefCell<Env>>,
         params: Box<Type>,
         body: Box<Type>,
     }

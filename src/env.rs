@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use crate::types::{Args, Ret, Type};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Env {
     data: HashMap<String, Type>,
     outer: Option<Rc<Env>>,

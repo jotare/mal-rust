@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use rustyline::error::ReadlineError;
@@ -15,18 +16,17 @@ fn main() {
         println!("Creating history at '{}'", history);
     }
 
-    let mut env = Rc::new(Env::new_default());
+    let env = Rc::new(RefCell::new(Env::new_default()));
 
     loop {
         let input = rl.readline(&prompt);
-
         match input {
             Ok(input) => {
                 if input.trim().is_empty() {
                     continue;
                 }
                 rl.add_history_entry(input.as_str());
-                let output = mal_rust::rep(&input, &mut env);
+                let output = mal_rust::rep(&input, &env);
                 if output.len() > 0 {
                     println!("{}", output);
                 }

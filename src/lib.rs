@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::{
@@ -14,7 +15,7 @@ fn read(input: &str) -> Type {
     reader::read_str(input)
 }
 
-fn eval(ast: Type, env: &mut Rc<Env>) -> Ret {
+fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
     match ast {
         Type::List(list) => {
             if list.len() == 0 {
@@ -32,7 +33,7 @@ fn eval(ast: Type, env: &mut Rc<Env>) -> Ret {
                         };
                         let value = *list[2].clone();
                         let value = eval(value, env)?;
-                        Rc::get_mut(env).unwrap().set(&key, value.clone());
+                        env.borrow_mut().set(&key, value.clone());
                         Ok(value)
                     }
 
@@ -41,7 +42,9 @@ fn eval(ast: Type, env: &mut Rc<Env>) -> Ret {
                             return Err(format!("let* must be called with 2 arguments"));
                         }
 
-                        let mut scope_env = Rc::new(Env::new(Some(Rc::clone(env)), &[], &[]));
+                        let scope_env = Rc::new(RefCell::new(
+                            Env::new(Some(Rc::new(env.borrow().clone())), &[], &[])
+                        ));
 
                         let binding_list = match *list[1].clone() {
                             Type::List(list) => list,
@@ -58,15 +61,15 @@ fn eval(ast: Type, env: &mut Rc<Env>) -> Ret {
                             };
 
                             let value = *binding_list[i + 1].clone();
-                            let value = eval(value, &mut scope_env)?;
+                            let value = eval(value, &scope_env)?;
 
-                            Rc::get_mut(&mut scope_env).unwrap().set(&symbol, value);
+                            scope_env.borrow_mut().set(&symbol, value);
 
                             i += 2;
                         }
 
                         let scoped_code = *list[2].clone();
-                        eval(scoped_code, &mut scope_env)
+                        eval(scoped_code, &scope_env)
                     }
 
                     Type::Symbol(symbol) if symbol == "do" => {
@@ -168,9 +171,9 @@ fn eval(ast: Type, env: &mut Rc<Env>) -> Ret {
 
                                 let args: Vec<Type> =
                                     list[1..].iter().map(|a| *a.clone()).collect();
-                                let fun_env =
-                                    Env::new(Some(Rc::clone(env)), &params, args.as_slice());
-                                eval((**body).clone(), &mut Rc::new(fun_env))
+                                let _env = (*env.borrow()).clone();
+                                let fun_env = Env::new(Some(Rc::new(_env)), &params, args.as_slice());
+                                eval((**body).clone(), &Rc::new(RefCell::new(fun_env)))
                             }
 
                             _ => Err(format!("First argument must be a function!")),
@@ -183,9 +186,9 @@ fn eval(ast: Type, env: &mut Rc<Env>) -> Ret {
     }
 }
 
-fn eval_ast(ast: Type, env: &mut Rc<Env>) -> Ret {
+fn eval_ast(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
     match ast {
-        Type::Symbol(sym) => match env.get(sym.as_str()) {
+        Type::Symbol(sym) => match env.borrow().get(sym.as_str()) {
             Ok(value) => Ok(value),
             Err(e) => Err(e),
         },
@@ -210,6 +213,6 @@ fn print(ast: Result<Type, String>) -> String {
     }
 }
 
-pub fn rep(input: &str, env: &mut Rc<Env>) -> String {
+pub fn rep(input: &str, env: &Rc<RefCell<Env>>) -> String {
     print(eval(read(input), env))
 }

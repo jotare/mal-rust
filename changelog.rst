@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.8.0
+-----
+- `Env` derive `Clone`
+- The REPL environment is wrapped with Rc and RefCell
+
 0.7.0
 -----
 - Implement `fn*` and the Closure type
