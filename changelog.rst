@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.9.0
+-----
+- Add `core` module with `Namespace` struct and arithmetic functions
+  (+, -, *, /)
+
 0.8.0
 -----
 - `Env` derive `Clone`

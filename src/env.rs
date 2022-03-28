@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::types::{Args, Ret, Type};
+use crate::types::Type;
+use crate::core::Namespace;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Env {
@@ -27,10 +28,10 @@ impl Env {
 
     pub fn new_default() -> Env {
         let mut env = Env::new(None, &[], &[]);
-        env.set("+", Type::Fun(sum));
-        env.set("-", Type::Fun(sub));
-        env.set("*", Type::Fun(mul));
-        env.set("/", Type::Fun(div));
+        let ns = Namespace::new_default();
+        for (sym, fun) in ns {
+            env.set(&sym, Type::Fun(fun));
+        }
         env
     }
 
@@ -56,53 +57,5 @@ impl Env {
             },
             None => Err(format!("Symbol '{}' not found in any environment", symbol)),
         }
-    }
-}
-
-fn sum(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a + *b)),
-        (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a + *b as f64)),
-        (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 + *b)),
-        (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a + *b)),
-        _ => Err(String::from(
-            "'+' operation failed. Types must be numeric (Int or Float)",
-        )),
-    }
-}
-
-fn sub(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a - *b)),
-        (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a - *b as f64)),
-        (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 - *b)),
-        (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a - *b)),
-        _ => Err(String::from(
-            "'-' operation failed. Types must be numeric (Int or Float)",
-        )),
-    }
-}
-
-fn mul(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a * *b)),
-        (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a * *b as f64)),
-        (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 * *b)),
-        (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a * *b)),
-        _ => Err(String::from(
-            "'*' operation failed. Types must be numeric (Int or Float)",
-        )),
-    }
-}
-
-fn div(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a / *b)),
-        (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a / *b as f64)),
-        (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 / *b)),
-        (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a / *b)),
-        _ => Err(String::from(
-            "'/' operation failed. Types must be numeric (Int or Float)",
-        )),
     }
 }
