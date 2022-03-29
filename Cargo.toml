@@ -1,6 +1,6 @@
 [package]
 name = "mal-rust"
-version = "0.9.0"
+version = "0.10.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 rustyline = "9.1.2"
 regex = "1.5.4"
+
+[dev-dependencies]
+gag = "1.0.0"

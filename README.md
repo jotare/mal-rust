@@ -34,7 +34,14 @@ mal-rust
 
 ## Tests
 
-Run tests with
+Run basic tests with
 ```bash
 cargo test
 ```
+
+Run full suite with:
+```bash
+cargo test -- --nocapture --include-ignored
+```
+
+`--nocapture` flag is needed to test print statements.

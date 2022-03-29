@@ -133,20 +133,43 @@ fn testing_closures() {
     assert_eq!(mal_rust::rep("(plus7 8)", &env), "15");
 }
 
+use std::io::Read;
+use gag::BufferRedirect;
+
 #[test]
 fn testing_do_form() {
     let env = Rc::new(RefCell::new(Env::new_default()));
-    assert_eq!(mal_rust::rep("(do (prn 101))", &env), "101");
-    assert_eq!(mal_rust::rep("", &env), "nil");
-    assert_eq!(mal_rust::rep("(do (prn 102) 7)", &env), "102");
-    assert_eq!(mal_rust::rep("", &env), "7");
-    assert_eq!(
-        mal_rust::rep("(do (prn 101) (prn 102) (+ 1 2))", &env),
-        "101\n102\n3"
-    );
+
+    assert_eq!(mal_rust::rep("(do (+ 2 3) (+ 4 5))", &env), "9");
 
     assert_eq!(mal_rust::rep("(do (def! a 6) 7 (+ a 8))", &env), "14");
     assert_eq!(mal_rust::rep("a", &env), "6");
+}
+
+#[test]
+#[ignore]
+fn testing_do_form_with_prn() {
+    let env = Rc::new(RefCell::new(Env::new_default()));
+    let mut buf = BufferRedirect::stdout().unwrap();
+    let mut output = String::new();
+
+    assert_eq!(mal_rust::rep("(do (prn 101))", &env), "nil");
+    buf.read_to_string(&mut output).unwrap();
+    assert_eq!(&output[..], "101\n");
+    output.clear();
+
+    assert_eq!(mal_rust::rep("(do (prn 102) 7)", &env), "7");
+    buf.read_to_string(&mut output).unwrap();
+    assert_eq!(&output[..], "102\n");
+    output.clear();
+
+    assert_eq!(
+        mal_rust::rep("(do (prn 101) (prn 102) (+ 1 2))", &env),
+        "3"
+    );
+    buf.read_to_string(&mut output).unwrap();
+    assert_eq!(&output[..], "101\n102\n");
+    output.clear();
 }
 
 #[test]

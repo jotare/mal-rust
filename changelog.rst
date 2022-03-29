@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.10.0
+------
+- Implement core functions: `prn`, `list`, `list?`, `empty?`, `count`,
+  `=`, `<`, `<=`, `>`, and `>=`
+
 0.9.0
 -----
 - Add `core` module with `Namespace` struct and arithmetic functions
