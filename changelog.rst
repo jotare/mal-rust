@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.13.0
+------
+- Implement `convert_to_vec` in Type and update `is_empty`, `count`
+  and `=` functions to work with Vectors
+
 0.12.0
 ------
 - Implement `not` using the interpreter itself

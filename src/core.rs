@@ -110,17 +110,17 @@ fn is_list(args: Args) -> Ret {
 
 fn is_empty(args: Args) -> Ret {
     match args.get(0) {
-        Some(Type::List(list)) => {
-            Ok(Type::Bool(list.len() == 0))
+        Some(Type::List(seq) | Type::Vector(seq))=> {
+            Ok(Type::Bool(seq.len() == 0))
         }
-        _ => Err(format!("Type error: 'empty?' is only supported for List"))
+        _ => Err(format!("Type error: 'empty?' is only supported for sequences"))
     }
 }
 
 fn count(args: Args) -> Ret {
     match args.get(0) {
-        Some(Type::List(list)) => {
-            Ok(Type::Int(list.len() as i32))
+        Some(Type::List(seq) | Type::Vector(seq)) => {
+            Ok(Type::Int(seq.len() as i32))
         }
         Some(Type::Nil) => Ok(Type::Int(0)),
         _ => Err(format!("Type error: 'count' is only supported for List"))
@@ -134,6 +134,11 @@ fn eq(args: Args) -> Ret {
                 (Type::Int(_)|Type::Float(_),Type::Int(_)|Type::Float(_)) => {
                     let a = a.convert_to_f64()?;
                     let b = b.convert_to_f64()?;
+                    Ok(Type::Bool(a == b))
+                }
+                (Type::List(_)|Type::Vector(_), Type::Vector(_)|Type::List(_)) => {
+                    let a = a.convert_to_vec()?;
+                    let b = b.convert_to_vec()?;
                     Ok(Type::Bool(a == b))
                 }
                 _ => Ok(Type::Bool(a == b)),

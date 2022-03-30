@@ -33,4 +33,12 @@ impl Type {
             _ => Err(format!("Type error: type must be a number (Int or Float)")),
         }
     }
+
+    /// Convert type to Vec. Type must be a sequence (List or Vector)
+    pub fn convert_to_vec(&self) -> Result<Vec<Box<Type>>, String> {
+        match self {
+            Type::List(seq)|Type::Vector(seq) => Ok(seq.clone()),
+            _ => Err(format!("Type error: type must be a sequence (List or Vector)")),
+        }
+    }
 }
