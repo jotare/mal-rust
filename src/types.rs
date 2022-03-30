@@ -11,6 +11,7 @@ pub enum Type {
     Float(f64),
     Symbol(String),
     List(Vec<Box<Type>>),
+    Vector(Vec<Box<Type>>),
     Fun(Function),
     Closure {
         env: Rc<RefCell<Env>>,

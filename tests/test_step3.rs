@@ -60,7 +60,6 @@ fn testing_outer_environment() {
 }
 
 #[test]
-#[ignore]
 fn testing_let_with_vector_bindings() {
     let env = Rc::new(RefCell::new(Env::new_default()));
     assert_eq!(mal_rust::rep("(let* [z 9] z)", &env), "9");
@@ -71,7 +70,6 @@ fn testing_let_with_vector_bindings() {
 }
 
 #[test]
-#[ignore]
 fn testing_vector_evaluation() {
     let env = Rc::new(RefCell::new(Env::new_default()));
     assert_eq!(

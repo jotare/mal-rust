@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.11.0
+------
+- Implement `Vector` type
+
 0.10.0
 ------
 - Implement core functions: `prn`, `list`, `list?`, `empty?`, `count`,

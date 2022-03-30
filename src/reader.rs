@@ -36,20 +36,30 @@ impl Reader {
 
         if token.starts_with("(") {
             self.read_list()
+        } else if token.starts_with("[") {
+            self.read_vector()
         } else {
             self.read_atom()
         }
     }
 
     fn read_list(&mut self) -> Type {
+        Type::List(self.read_seq(")"))
+    }
+
+    fn read_vector(&mut self) -> Type {
+        Type::Vector(self.read_seq("]"))
+    }
+
+    fn read_seq(&mut self, end: &str) -> Vec<Box<Type>> {
         let mut items = Vec::new();
 
-        self.next(); // skip "("
+        self.next(); // skip "(", "["
 
         loop {
             let item = self.peek();
 
-            if item == ")" {
+            if item == end {
                 break;
             } else {
                 items.push(Box::new(self.read_form()));
@@ -60,7 +70,7 @@ impl Reader {
             }
         }
 
-        Type::List(items)
+        items
     }
 
     fn read_atom(&mut self) -> Type {
@@ -131,13 +141,13 @@ mod tests {
         );
 
         assert_eq!(
-            tokenize("(123 456 789 )"),
+            tokenize("[123 456 789 ]"),
             vec![
-                String::from("("),
+                String::from("["),
                 String::from("123"),
                 String::from("456"),
                 String::from("789"),
-                String::from(")"),
+                String::from("]"),
             ]
         );
 
@@ -171,8 +181,8 @@ mod tests {
         );
 
         assert_eq!(
-            read_str("(123 456)"),
-            Type::List(vec![Box::new(Type::Int(123)), Box::new(Type::Int(456)),])
+            read_str("[123 456]"),
+            Type::Vector(vec![Box::new(Type::Int(123)), Box::new(Type::Int(456)),])
         );
 
         assert_eq!(

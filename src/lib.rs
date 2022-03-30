@@ -48,8 +48,8 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                         ));
 
                         let binding_list = match *list[1].clone() {
-                            Type::List(list) => list,
-                            _ => return Err(format!("First let* argument must be a list")),
+                            Type::List(seq) | Type::Vector(seq) => seq,
+                            _ => return Err(format!("First let* argument must be a sequence")),
                         };
                         if binding_list.len() % 2 != 0 {
                             return Err(format!("let* binding list must be composed of pairs"));
@@ -201,6 +201,15 @@ fn eval_ast(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                 evaluated.push(Box::new(elem));
             }
             Ok(Type::List(evaluated))
+        }
+
+        Type::Vector(vector) => {
+            let mut evaluated = Vec::with_capacity(vector.len());
+            for elem in vector {
+                let elem = eval(*elem, env)?;
+                evaluated.push(Box::new(elem));
+            }
+            Ok(Type::Vector(evaluated))
         }
 
         _ => Ok(ast),

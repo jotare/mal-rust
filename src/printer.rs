@@ -28,17 +28,24 @@ fn pr_type(t: &Type, print_readably: bool) -> String {
         Type::Symbol(symbol) => s.push_str(&format!("{}", symbol)),
         Type::List(list) => {
             s.push('(');
-            s.push_str(
-                &list
-                    .iter()
-                    .map(|element| pr_type(&*element, print_readably))
-                    .collect::<Vec<String>>()
-                    .join(" "),
-            );
+            s.push_str(pr_seq(&list, print_readably).as_str());
             s.push(')');
+        }
+        Type::Vector(list) => {
+            s.push('[');
+            s.push_str(pr_seq(&list, print_readably).as_str());
+            s.push(']');
         }
         Type::Fun(_) => s.push_str("#<function>"),
         Type::Closure { .. } => s.push_str("#<closure>"),
     };
     s
+}
+
+fn pr_seq(seq: &Vec<Box<Type>>, print_readably: bool) -> String {
+    seq
+        .iter()
+        .map(|element| pr_type(&*element, print_readably))
+        .collect::<Vec<String>>()
+        .join(" ")
 }
