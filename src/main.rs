@@ -18,6 +18,9 @@ fn main() {
 
     let env = Rc::new(RefCell::new(Env::new_default()));
 
+    // Define `not` using the interpreter itself
+    mal_rust::rep("(def! not (fn* (a) (if a false true)))", &env);
+
     loop {
         let input = rl.readline(&prompt);
         match input {

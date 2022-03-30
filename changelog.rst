@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.12.0
+------
+- Implement `not` using the interpreter itself
+
 0.11.0
 ------
 - Implement `Vector` type
