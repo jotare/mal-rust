@@ -26,6 +26,7 @@ fn pr_type(t: &Type, print_readably: bool) -> String {
             }
         },
         Type::Symbol(symbol) => s.push_str(&format!("{}", symbol)),
+        Type::Keyword(keyword) => s.push_str(&format!(":{}", keyword)),
         Type::List(list) => {
             s.push('(');
             s.push_str(pr_seq(&list, print_readably).as_str());

@@ -10,6 +10,7 @@ pub enum Type {
     Int(i32),
     Float(f64),
     Symbol(String),
+    Keyword(String),
     List(Vec<Box<Type>>),
     Vector(Vec<Box<Type>>),
     Fun(Function),
@@ -56,6 +57,7 @@ impl PartialEq for Type {
                 self.convert_to_f64() == other.convert_to_f64()
             }
             (Symbol(a), Symbol(b)) => a == b,
+            (Keyword(a), Keyword(b)) => a == b,
             (List(_), List(_))
             | (List(_), Vector(_))
             | (Vector(_), List(_))

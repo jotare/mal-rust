@@ -38,6 +38,8 @@ impl Reader {
             self.read_list()
         } else if token.starts_with("[") {
             self.read_vector()
+        } else if token.starts_with(":") {
+            self.read_keyword()
         } else {
             self.read_atom()
         }
@@ -71,6 +73,11 @@ impl Reader {
         }
 
         items
+    }
+
+    fn read_keyword(&mut self) -> Type {
+        let token = self.peek();
+        Type::Keyword(token[1..].to_string())
     }
 
     fn read_atom(&mut self) -> Type {

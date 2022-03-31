@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.15.0
+------
+- Implement `Keyword` type
+
 0.14.1
 ------
 - Fix `Vector` functionality to be used as `List`
