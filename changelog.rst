@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.14.1
+------
+- Fix `Vector` functionality to be used as `List`
+
 0.14.0
 ------
 - Implement PartialEq for Type

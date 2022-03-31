@@ -95,35 +95,31 @@ fn prn(args: Args) -> Ret {
 
 fn list(args: Args) -> Ret {
     Ok(Type::List(
-        args.iter()
-            .map(|a| Box::new(a.clone()))
-            .collect()
+        args.iter().map(|a| Box::new(a.clone())).collect(),
     ))
 }
 
 fn is_list(args: Args) -> Ret {
     match args.get(0) {
         Some(Type::List(_)) => Ok(Type::Bool(true)),
-        _ => Ok(Type::Bool(false))
+        _ => Ok(Type::Bool(false)),
     }
 }
 
 fn is_empty(args: Args) -> Ret {
     match args.get(0) {
-        Some(Type::List(seq) | Type::Vector(seq))=> {
-            Ok(Type::Bool(seq.len() == 0))
-        }
-        _ => Err(format!("Type error: 'empty?' is only supported for sequences"))
+        Some(Type::List(seq) | Type::Vector(seq)) => Ok(Type::Bool(seq.len() == 0)),
+        _ => Err(format!(
+            "Type error: 'empty?' is only supported for sequences"
+        )),
     }
 }
 
 fn count(args: Args) -> Ret {
     match args.get(0) {
-        Some(Type::List(seq) | Type::Vector(seq)) => {
-            Ok(Type::Int(seq.len() as i32))
-        }
+        Some(Type::List(seq) | Type::Vector(seq)) => Ok(Type::Int(seq.len() as i32)),
         Some(Type::Nil) => Ok(Type::Int(0)),
-        _ => Err(format!("Type error: 'count' is only supported for List"))
+        _ => Err(format!("Type error: 'count' is only supported for List")),
     }
 }
 

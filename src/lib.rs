@@ -18,9 +18,9 @@ fn read(input: &str) -> Type {
 
 fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
     match ast {
-        Type::List(list) => {
+        Type::List(ref list) => {
             if list.len() == 0 {
-                Ok(Type::List(list))
+                Ok(ast)
             } else {
                 match *list[0].clone() {
                     Type::Symbol(symbol) if symbol == "def!" => {
@@ -43,9 +43,11 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                             return Err(format!("let* must be called with 2 arguments"));
                         }
 
-                        let scope_env = Rc::new(RefCell::new(
-                            Env::new(Some(Rc::new(env.borrow().clone())), &[], &[])
-                        ));
+                        let scope_env = Rc::new(RefCell::new(Env::new(
+                            Some(Rc::new(env.borrow().clone())),
+                            &[],
+                            &[],
+                        )));
 
                         let binding_list = match *list[1].clone() {
                             Type::List(seq) | Type::Vector(seq) => seq,
@@ -116,8 +118,12 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                         }
 
                         let params = match *list[1] {
-                            Type::List(_) => *list[1].clone(),
-                            _ => return Err(format!("fn* must be defined with a parameter list")),
+                            Type::List(_) | Type::Vector(_) => *list[1].clone(),
+                            _ => {
+                                return Err(format!(
+                                    "fn* must be defined with a sequence as parameter"
+                                ))
+                            }
                         };
                         let body = *list[2].clone();
 
@@ -133,7 +139,7 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                     _ => {
                         // eval list and call first item as a
                         // function and the rest as its arguments
-                        let list = eval_ast(Type::List(list), env)?;
+                        let list = eval_ast(ast, env)?;
                         let list = match list {
                             Type::List(list) => list,
                             _ => return Err(format!("Type can't not be a List")),
@@ -152,7 +158,7 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                                 ref env,
                             } => {
                                 let params = match **params {
-                                    Type::List(ref l) => {
+                                    Type::List(ref l) | Type::Vector(ref l) => {
                                         let l: Vec<&str> = l
                                             .iter()
                                             .map(|elem| match **elem {
@@ -173,7 +179,8 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                                 let args: Vec<Type> =
                                     list[1..].iter().map(|a| *a.clone()).collect();
                                 let _env = (*env.borrow()).clone();
-                                let fun_env = Env::new(Some(Rc::new(_env)), &params, args.as_slice());
+                                let fun_env =
+                                    Env::new(Some(Rc::new(_env)), &params, args.as_slice());
                                 eval((**body).clone(), &Rc::new(RefCell::new(fun_env)))
                             }
 
