@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.16.0
+------
+- Add comment support to the interpreter. Lines starting with ; are
+  considered comments and ignored.
+
 0.15.0
 ------
 - Implement `Keyword` type

@@ -12,8 +12,11 @@ mod printer;
 mod reader;
 mod types;
 
-fn read(input: &str) -> Type {
-    reader::read_str(input)
+fn read(input: &str) -> Option<Type> {
+    if input.starts_with(";") {
+        return None
+    }
+    Some(reader::read_str(input))
 }
 
 fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
@@ -231,5 +234,9 @@ fn print(ast: Result<Type, String>) -> String {
 }
 
 pub fn rep(input: &str, env: &Rc<RefCell<Env>>) -> String {
-    print(eval(read(input), env))
+    let parsed_input = read(input);
+    match parsed_input {
+        Some(ast) => print(eval(ast, env)),
+        None => String::new()
+    }
 }
