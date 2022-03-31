@@ -129,22 +129,8 @@ fn count(args: Args) -> Ret {
 
 fn eq(args: Args) -> Ret {
     match (args.get(0), args.get(1)) {
-        (Some(a), Some(b)) => {
-            match (a, b) {
-                (Type::Int(_)|Type::Float(_),Type::Int(_)|Type::Float(_)) => {
-                    let a = a.convert_to_f64()?;
-                    let b = b.convert_to_f64()?;
-                    Ok(Type::Bool(a == b))
-                }
-                (Type::List(_)|Type::Vector(_), Type::Vector(_)|Type::List(_)) => {
-                    let a = a.convert_to_vec()?;
-                    let b = b.convert_to_vec()?;
-                    Ok(Type::Bool(a == b))
-                }
-                _ => Ok(Type::Bool(a == b)),
-            }
-        }
-        _ => Err(format!("Value error: must pass 2 arguments to '='"))
+        (Some(a), Some(b)) => Ok(Type::Bool(a == b)),
+        _ => Err(format!("Value error: must pass 2 arguments to '='")),
     }
 }
 
@@ -155,10 +141,9 @@ fn lt(args: Args) -> Ret {
             let b = b.convert_to_f64()?;
             Ok(Type::Bool(a < b))
         }
-        _ => Err(format!("Value error: must pass 2 arguments to '<'"))
+        _ => Err(format!("Value error: must pass 2 arguments to '<'")),
     }
 }
-
 
 fn lte(args: Args) -> Ret {
     match (args.get(0), args.get(1)) {
@@ -167,7 +152,7 @@ fn lte(args: Args) -> Ret {
             let b = b.convert_to_f64()?;
             Ok(Type::Bool(a <= b))
         }
-        _ => Err(format!("Value error: must pass 2 arguments to '<='"))
+        _ => Err(format!("Value error: must pass 2 arguments to '<='")),
     }
 }
 
@@ -178,7 +163,7 @@ fn gt(args: Args) -> Ret {
             let b = b.convert_to_f64()?;
             Ok(Type::Bool(a > b))
         }
-        _ => Err(format!("Value error: must pass 2 arguments to '>'"))
+        _ => Err(format!("Value error: must pass 2 arguments to '>'")),
     }
 }
 
@@ -189,6 +174,6 @@ fn gte(args: Args) -> Ret {
             let b = b.convert_to_f64()?;
             Ok(Type::Bool(a >= b))
         }
-        _ => Err(format!("Value error: must pass 2 arguments to '>='"))
+        _ => Err(format!("Value error: must pass 2 arguments to '>='")),
     }
 }

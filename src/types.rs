@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use crate::env::Env;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub enum Type {
     Nil,
     Bool(bool),
@@ -17,7 +17,7 @@ pub enum Type {
         env: Rc<RefCell<Env>>,
         params: Box<Type>,
         body: Box<Type>,
-    }
+    },
 }
 
 pub type Args = Vec<Type>;
@@ -39,6 +39,26 @@ impl Type {
         match self {
             Type::List(seq)|Type::Vector(seq) => Ok(seq.clone()),
             _ => Err(format!("Type error: type must be a sequence (List or Vector)")),
+        }
+    }
+}
+
+impl PartialEq for Type {
+    fn eq(&self, other: &Self) -> bool {
+        use super::Type::*;
+
+        match (self, other) {
+            (Nil, Nil) => true,
+            (Bool(a), Bool(b)) => a == b,
+            (Int(_), Int(_)) | (Int(_), Float(_)) | (Float(_), Int(_)) | (Float(_), Float(_)) => {
+                self.convert_to_f64() == other.convert_to_f64()
+            }
+            (Symbol(a), Symbol(b)) => a == b,
+            (List(_), List(_))
+            | (List(_), Vector(_))
+            | (Vector(_), List(_))
+            | (Vector(_), Vector(_)) => self.convert_to_vec() == other.convert_to_vec(),
+            _ => false,
         }
     }
 }

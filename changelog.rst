@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.14.0
+------
+- Implement PartialEq for Type
+
 0.13.0
 ------
 - Implement `convert_to_vec` in Type and update `is_empty`, `count`
