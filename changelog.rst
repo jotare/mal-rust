@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+0.17.0
+------
+- Implement `String` type
+- Add lazy_static crate and use it for regex compilation
+- Implement string functions: `prn`, `println`, `pr-str`, `str`  
+
 0.16.0
 ------
 - Add comment support to the interpreter. Lines starting with ; are

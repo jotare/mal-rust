@@ -11,6 +11,7 @@ pub enum Type {
     Float(f64),
     Symbol(String),
     Keyword(String),
+    String(String),
     List(Vec<Box<Type>>),
     Vector(Vec<Box<Type>>),
     Fun(Function),
@@ -26,7 +27,6 @@ pub type Ret = Result<Type, String>;
 pub type Function = fn(Args) -> Ret;
 
 impl Type {
-
     pub fn convert_to_f64(&self) -> Result<f64, String> {
         match self {
             Type::Int(num) => Ok(*num as f64),
@@ -58,6 +58,7 @@ impl PartialEq for Type {
             }
             (Symbol(a), Symbol(b)) => a == b,
             (Keyword(a), Keyword(b)) => a == b,
+            (String(a), String(b)) => a == b,
             (List(_), List(_))
             | (List(_), Vector(_))
             | (Vector(_), List(_))

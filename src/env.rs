@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::types::Type;
 use crate::core::Namespace;
+use crate::types::Type;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Env {

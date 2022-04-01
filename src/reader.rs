@@ -1,4 +1,5 @@
-use regex::Regex;
+use lazy_static::lazy_static;
+use regex::{Captures, Regex};
 
 use crate::types::Type;
 
@@ -38,6 +39,8 @@ impl Reader {
             self.read_list()
         } else if token.starts_with("[") {
             self.read_vector()
+        } else if token.starts_with("\"") {
+            self.read_string()
         } else if token.starts_with(":") {
             self.read_keyword()
         } else {
@@ -81,8 +84,6 @@ impl Reader {
     }
 
     fn read_atom(&mut self) -> Type {
-        // String::parse + cast a f64, i32... per canviar de tipus. Alguna forma millor?
-
         let token = self.peek();
 
         match token.as_str() {
@@ -102,6 +103,23 @@ impl Reader {
             }
         }
     }
+
+    fn read_string(&mut self) -> Type {
+        let token = self.peek();
+        let token = token[1..token.len() - 1].to_string();
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r#"(\\n|\\\\|\\")"#).unwrap();
+        }
+        let string = RE
+            .replace_all(&token, |cap: &Captures| match &cap[0] {
+                "\\\"" => "\"",
+                "\\n" => "\n",
+                "\\\\" => "\\",
+                _ => panic!("Impossible capture {}", &cap[0]),
+            })
+            .to_string();
+        Type::String(string)
+    }
 }
 
 /// Reads a string of text and return a correct Abstract Syntax Tree
@@ -114,12 +132,14 @@ pub fn read_str(input: &str) -> Type {
 
 /// Tokenize the input stream and returns a list of tokens
 pub fn tokenize(input: &str) -> Vec<Token> {
-    let re = Regex::new(
-        "[\\s ,]*(~@|[\\[\\]{}()'`~^@]|\"(?:\\\\.|[^\\\\\"])*\"?|;.*|[^\\s\\[\\]{}('\"`,;)]*)",
-    )
-    .unwrap();
+    lazy_static! {
+        static ref RE: Regex = Regex::new(
+            "[\\s ,]*(~@|[\\[\\]{}()'`~^@]|\"(?:\\\\.|[^\\\\\"])*\"?|;.*|[^\\s\\[\\]{}('\"`,;)]*)",
+        )
+        .unwrap();
+    }
 
-    let tokens = re
+    let tokens = RE
         .captures_iter(input)
         .map(|capture| capture[1].to_owned())
         .collect();
@@ -172,6 +192,17 @@ mod tests {
                 String::from(")"),
             ]
         );
+
+        assert_eq!(
+            tokenize("(abc 123 \"xyz\")"),
+            vec![
+                String::from("("),
+                String::from("abc"),
+                String::from("123"),
+                String::from("\"xyz\""),
+                String::from(")"),
+            ]
+        );
     }
 
     #[test]
@@ -181,6 +212,8 @@ mod tests {
         assert_eq!(read_str("123"), Type::Int(123));
 
         assert_eq!(read_str("abc"), Type::Symbol(String::from("abc")));
+
+        assert_eq!(read_str("\"hello\""), Type::String(String::from("hello")));
 
         assert_eq!(
             read_str("(123 456)"),
