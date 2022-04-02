@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.20.0
+------
+- Implement `read-string` function
+
 0.19.0
 ------
 - Implement tail call optimization in eval

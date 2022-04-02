@@ -4,6 +4,7 @@ use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 
 use crate::printer::pr_str;
+use crate::reader::read_str;
 use crate::types::{Args, Function, Ret, Type};
 
 pub struct Namespace {
@@ -27,6 +28,7 @@ impl Namespace {
         ns.data.insert(String::from("str"), str_fun);
         ns.data.insert(String::from("prn"), prn);
         ns.data.insert(String::from("println"), println);
+        ns.data.insert(String::from("read-string"), read_string);
         ns.data.insert(String::from("list"), list);
         ns.data.insert(String::from("list?"), is_list);
         ns.data.insert(String::from("empty?"), is_empty);
@@ -171,6 +173,13 @@ fn println(args: Args) -> Ret {
 
     println!("{}", s);
     Ok(Type::Nil)
+}
+
+fn read_string(args: Args) -> Ret {
+    match args.get(0) {
+        Some(Type::String(ref input)) => Ok(read_str(input)),
+        _ => Err(format!("Type error: must pass a string to read-string")),
+    }
 }
 
 fn list(args: Args) -> Ret {
