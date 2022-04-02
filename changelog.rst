@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.19.0
+------
+- Implement tail call optimization in eval
+
 0.18.0
 ------
 - Implement `HashMap` type

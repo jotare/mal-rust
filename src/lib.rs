@@ -20,182 +20,227 @@ fn read(input: &str) -> Option<Type> {
     Some(reader::read_str(input))
 }
 
+struct TcoVals {
+    ast: Option<Type>,
+    env: Option<Rc<RefCell<Env>>>,
+}
+
 fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
-    match ast {
-        Type::List(ref list) => {
-            if list.len() == 0 {
-                Ok(ast)
-            } else {
-                match *list[0].clone() {
-                    Type::Symbol(symbol) if symbol == "def!" => {
-                        if list.len() != 3 {
-                            return Err(format!("def! must be called with 2 arguments"));
-                        }
+    let mut ast = ast;
+    let mut tco_env = env.clone(); // use as owner
+    let mut env; // reuse parameter names but use them as mutable
 
-                        let key = match *list[1].clone() {
-                            Type::Symbol(key) => key,
-                            _ => return Err(format!("First def! argument must be a symbol")),
-                        };
-                        let value = *list[2].clone();
-                        let value = eval(value, env)?;
-                        env.borrow_mut().set(&key, value.clone());
-                        Ok(value)
-                    }
+    let result;
+    let mut tco_values = None;
 
-                    Type::Symbol(symbol) if symbol == "let*" => {
-                        if list.len() != 3 {
-                            return Err(format!("let* must be called with 2 arguments"));
-                        }
+    'tco: loop {
+        if let Some(TcoVals {
+            ast: new_ast,
+            env: new_env,
+        }) = tco_values
+        {
+            ast = new_ast.unwrap_or(ast);
+            tco_env = new_env.unwrap_or(tco_env);
+        }
 
-                        let scope_env = Rc::new(RefCell::new(Env::new(
-                            Some(Rc::new(env.borrow().clone())),
-                            &[],
-                            &[],
-                        )));
+        env = &tco_env;
 
-                        let binding_list = match *list[1].clone() {
-                            Type::List(seq) | Type::Vector(seq) => seq,
-                            _ => return Err(format!("First let* argument must be a sequence")),
-                        };
-                        if binding_list.len() % 2 != 0 {
-                            return Err(format!("let* binding list must be composed of pairs"));
-                        }
-                        let mut i = 0;
-                        while i + 1 < binding_list.len() {
-                            let symbol = match *binding_list[i].clone() {
-                                Type::Symbol(symbol) => symbol,
-                                _ => return Err(format!("let* variable names must be symbols")),
+        result = match ast {
+            Type::List(ref list) => {
+                if list.len() == 0 {
+                    Ok(ast)
+                } else {
+                    match *list[0].to_owned() {
+                        Type::Symbol(symbol) if symbol == "def!" => {
+                            if list.len() != 3 {
+                                return Err(format!("def! must be called with 2 arguments"));
+                            }
+
+                            let key = match *list[1].to_owned() {
+                                Type::Symbol(key) => key,
+                                _ => return Err(format!("First def! argument must be a symbol")),
                             };
-
-                            let value = *binding_list[i + 1].clone();
-                            let value = eval(value, &scope_env)?;
-
-                            scope_env.borrow_mut().set(&symbol, value);
-
-                            i += 2;
+                            let value = *list[2].to_owned();
+                            let value = eval(value, env)?;
+                            env.borrow_mut().set(&key, value.clone());
+                            Ok(value)
                         }
 
-                        let scoped_code = *list[2].clone();
-                        eval(scoped_code, &scope_env)
-                    }
-
-                    Type::Symbol(symbol) if symbol == "do" => {
-                        let do_list = Type::List(list[1..].to_vec());
-                        match eval_ast(do_list, env)? {
-                            Type::List(list) => match list.last() {
-                                Some(element) => Ok(*element.clone()),
-                                None => Ok(Type::Nil),
-                            },
-                            _ => Err(format!("Malformed do expression")),
-                        }
-                    }
-
-                    Type::Symbol(symbol) if symbol == "if" => {
-                        if list.len() < 3 || list.len() > 4 {
-                            return Err(format!("Malformed if expression"));
-                        }
-
-                        let cond = *list.get(1).unwrap().clone();
-                        let if_clause = *list.get(2).unwrap().clone();
-                        let else_clause = list.get(3);
-
-                        let cond = match eval(cond, env)? {
-                            Type::Bool(false) | Type::Nil => false,
-                            _ => true,
-                        };
-
-                        if cond {
-                            eval(if_clause, env)
-                        } else {
-                            if else_clause.is_some() {
-                                let else_clause = *else_clause.unwrap().clone();
-                                eval(else_clause, env)
-                            } else {
-                                Ok(Type::Nil)
-                            }
-                        }
-                    }
-
-                    Type::Symbol(symbol) if symbol == "fn*" => {
-                        if list.len() != 3 {
-                            return Err(format!("Malformed fn* expression"));
-                        }
-
-                        let params = match *list[1] {
-                            Type::List(_) | Type::Vector(_) => *list[1].clone(),
-                            _ => {
-                                return Err(format!(
-                                    "fn* must be defined with a sequence as parameter"
-                                ))
-                            }
-                        };
-                        let body = *list[2].clone();
-
-                        let closure = Type::Closure {
-                            params: Box::new(params),
-                            body: Box::new(body),
-                            env: Rc::clone(env),
-                        };
-
-                        Ok(closure)
-                    }
-
-                    _ => {
-                        // eval list and call first item as a
-                        // function and the rest as its arguments
-                        let list = eval_ast(ast, env)?;
-                        let list = match list {
-                            Type::List(list) => list,
-                            _ => return Err(format!("Type can't not be a List")),
-                        };
-
-                        match *list[0] {
-                            Type::Fun(fun) => {
-                                let args = list[1..].iter().map(|a| *a.clone()).collect();
-                                let ret = fun(args);
-                                ret
+                        Type::Symbol(symbol) if symbol == "let*" => {
+                            if list.len() != 3 {
+                                return Err(format!("let* must be called with 2 arguments"));
                             }
 
-                            Type::Closure {
-                                ref params,
-                                ref body,
-                                ref env,
-                            } => {
-                                let params = match **params {
-                                    Type::List(ref l) | Type::Vector(ref l) => {
-                                        let l: Vec<&str> = l
-                                            .iter()
-                                            .map(|elem| match **elem {
-                                                Type::Symbol(ref sym) => sym.as_str(),
-                                                _ => "",
-                                            })
-                                            .filter(|elem| elem.len() > 0)
-                                            .collect();
-                                        l
-                                    }
+                            let scope_env = Rc::new(RefCell::new(Env::new(
+                                Some(Rc::new(env.borrow().clone())),
+                                &[],
+                                &[],
+                            )));
+
+                            let binding_list = match *list[1].to_owned() {
+                                Type::List(seq) | Type::Vector(seq) => seq,
+                                _ => return Err(format!("First let* argument must be a list")),
+                            };
+                            if binding_list.len() % 2 != 0 {
+                                return Err(format!("let* binding list must be composed of pairs"));
+                            }
+                            let mut i = 0;
+                            while i + 1 < binding_list.len() {
+                                let symbol = match *binding_list[i].to_owned() {
+                                    Type::Symbol(symbol) => symbol,
                                     _ => {
-                                        return Err(format!(
-                                            "Interpreter error: malformed closure!"
-                                        ))
+                                        return Err(format!("let* variable names must be symbols"))
                                     }
                                 };
 
-                                let args: Vec<Type> =
-                                    list[1..].iter().map(|a| *a.clone()).collect();
-                                let _env = (*env.borrow()).clone();
-                                let fun_env =
-                                    Env::new(Some(Rc::new(_env)), &params, args.as_slice());
-                                eval((**body).clone(), &Rc::new(RefCell::new(fun_env)))
+                                let value = *binding_list[i + 1].to_owned();
+                                let value = eval(value, &scope_env)?;
+
+                                scope_env.borrow_mut().set(&symbol, value);
+
+                                i += 2;
                             }
 
-                            _ => Err(format!("First argument must be a function!")),
+                            let scoped_code = *list[2].to_owned();
+
+                            tco_values = Some(TcoVals {
+                                ast: Some(scoped_code),
+                                env: Some(scope_env),
+                            });
+                            // eval(scoped_code, &scope_env)
+                            continue 'tco;
+                        }
+
+                        Type::Symbol(symbol) if symbol == "do" => {
+                            let (last, do_list) = list.split_last().unwrap();
+                            let do_list = Type::List(do_list[1..].to_vec());
+                            eval_ast(do_list, env)?;
+                            tco_values = Some(TcoVals {
+                                ast: Some(*last.to_owned()),
+                                env: None,
+                            });
+                            continue 'tco;
+                        }
+
+                        Type::Symbol(symbol) if symbol == "if" => {
+                            if list.len() < 3 || list.len() > 4 {
+                                return Err(format!("Malformed if expression"));
+                            }
+
+                            let cond = *list.get(1).unwrap().to_owned();
+                            let if_clause = *list.get(2).unwrap().to_owned();
+                            let else_clause = list.get(3);
+
+                            let cond = match eval(cond, env)? {
+                                Type::Bool(false) | Type::Nil => false,
+                                _ => true,
+                            };
+
+                            if cond {
+                                eval(if_clause, env)
+                            } else {
+                                if else_clause.is_some() {
+                                    let else_clause = *else_clause.unwrap().to_owned();
+                                    tco_values = Some(TcoVals {
+                                        ast: Some(else_clause),
+                                        env: None,
+                                    });
+                                    continue 'tco;
+                                } else {
+                                    Ok(Type::Nil)
+                                }
+                            }
+                        }
+
+                        Type::Symbol(symbol) if symbol == "fn*" => {
+                            if list.len() != 3 {
+                                return Err(format!("Malformed fn* expression"));
+                            }
+
+                            let params = match *list[1] {
+                                Type::List(_) | Type::Vector(_) => *list[1].clone(),
+                                _ => {
+                                    return Err(format!(
+                                        "fn* must be defined with a sequence as parameter"
+                                    ))
+                                }
+                            };
+                            let body = *list[2].clone();
+
+                            let closure = Type::Closure {
+                                params: Box::new(params),
+                                body: Box::new(body),
+                                env: Rc::clone(env),
+                            };
+
+                            Ok(closure)
+                        }
+
+                        _ => {
+                            // eval list and call first item as a
+                            // function and the rest as its arguments
+                            let list = eval_ast(ast.clone(), env)?;
+                            let list = match list {
+                                Type::List(list) => list,
+                                _ => return Err(format!("Type can't not be a List")),
+                            };
+
+                            let (f, args) = list.split_first().unwrap();
+                            let f = *f.to_owned();
+                            let args = args.iter().map(|arg| *arg.to_owned()).collect();
+
+                            match f {
+                                Type::Fun(fun) => fun(args),
+
+                                Type::Closure {
+                                    ref params,
+                                    ref body,
+                                    ref env,
+                                } => {
+                                    let params = match **params {
+                                        Type::List(ref l) | Type::Vector(ref l) => {
+                                            let param_list: Vec<&str> = l
+                                                .iter()
+                                                .map(|elem| match **elem {
+                                                    Type::Symbol(ref sym) => sym.as_str(),
+                                                    _ => "",
+                                                })
+                                                .filter(|elem| elem.len() > 0)
+                                                .collect();
+                                            param_list
+                                        }
+                                        _ => {
+                                            return Err(format!(
+                                                "Interpreter error: malformed closure!"
+                                            ))
+                                        }
+                                    };
+
+                                    let fun_env = Env::new(
+                                        Some(Rc::new(env.borrow().to_owned())),
+                                        &params,
+                                        args.as_slice(),
+                                    );
+
+                                    tco_values = Some(TcoVals {
+                                        ast: Some(*body.to_owned()),
+                                        env: Some(Rc::new(RefCell::new(fun_env))),
+                                    });
+                                    continue 'tco;
+                                }
+                                _ => Err(format!("Type error: first argument must be a function")),
+                            }
                         }
                     }
                 }
             }
-        }
-        other => eval_ast(other, env),
+            _ => eval_ast(ast, env),
+        };
+
+        // end Tail call optimization
+        break;
     }
+    result
 }
 
 fn eval_ast(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {

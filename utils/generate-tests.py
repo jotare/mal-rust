@@ -74,7 +74,7 @@ for test in tests:
     print(f"""\
 #[test]
 fn {test_name}() {{
-    let mut env = Env::new_default();\
+    let env = Rc::new(RefCell::new(Env::new_default()));\
 """)
 
     for case in test["cases"]:
@@ -83,7 +83,7 @@ fn {test_name}() {{
 
         print(f"""\
     assert_eq!(
-        mal_rust::rep("{input}", &mut env),
+        mal_rust::rep("{input}", &env),
         "{output}"
     );\
 """)

@@ -29,6 +29,8 @@ pub type Ret = Result<Type, String>;
 pub type Function = fn(Args) -> Ret;
 
 impl Type {
+    /// Convert a Type instance to it's f64 representation. Only calls
+    /// with types Int or Float will be successful
     pub fn convert_to_f64(&self) -> Result<f64, String> {
         match self {
             Type::Int(num) => Ok(*num as f64),
