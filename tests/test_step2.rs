@@ -45,7 +45,6 @@ fn testing_repl_env() {
 }
 
 #[test]
-#[ignore]
 fn testing_evaluation_within_collection_literals() {
     let env = Rc::new(RefCell::new(Env::new_default()));
     assert_eq!(mal_rust::rep("[1 2 (+ 1 2)]", &env), "[1 2 3]");
@@ -56,7 +55,6 @@ fn testing_evaluation_within_collection_literals() {
 }
 
 #[test]
-#[ignore]
 fn check_that_evaluation_hasnt_broken_empty_collections() {
     let env = Rc::new(RefCell::new(Env::new_default()));
     assert_eq!(mal_rust::rep("[]", &env), "[]");

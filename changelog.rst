@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.18.0
+------
+- Implement `HashMap` type
+
 0.17.0
 ------
 - Implement `String` type

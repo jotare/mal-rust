@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::{
@@ -14,7 +15,7 @@ mod types;
 
 fn read(input: &str) -> Option<Type> {
     if input.starts_with(";") {
-        return None
+        return None;
     }
     Some(reader::read_str(input))
 }
@@ -222,6 +223,16 @@ fn eval_ast(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
             Ok(Type::Vector(evaluated))
         }
 
+        Type::HashMap(hash_map) => {
+            let mut evaluated = HashMap::with_capacity(hash_map.len());
+            for (key, value) in hash_map {
+                let k = key.clone();
+                let v = Box::new(eval(*value.to_owned(), env)?);
+                evaluated.insert(k, v);
+            }
+            Ok(Type::HashMap(evaluated))
+        }
+
         _ => Ok(ast),
     }
 }
@@ -237,6 +248,6 @@ pub fn rep(input: &str, env: &Rc<RefCell<Env>>) -> String {
     let parsed_input = read(input);
     match parsed_input {
         Some(ast) => print(eval(ast, env)),
-        None => String::new()
+        None => String::new(),
     }
 }

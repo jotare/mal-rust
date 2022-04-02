@@ -55,6 +55,17 @@ fn pr_type(t: &Type, print_readably: bool) -> String {
             s.push_str(pr_seq(&list, print_readably).as_str());
             s.push(']');
         }
+        Type::HashMap(hashmap) => {
+            s.push('{');
+            s.push_str(
+                &hashmap
+                    .iter()
+                    .map(|(k, v)| format!("{} {}", k, pr_type(&*v, print_readably)))
+                    .collect::<Vec<String>>()
+                    .join(" "),
+            );
+            s.push('}');
+        }
         Type::Fun(_) => s.push_str("#<function>"),
         Type::Closure { .. } => s.push_str("#<closure>"),
     };

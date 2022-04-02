@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 
@@ -35,16 +37,13 @@ impl Reader {
     fn read_form(&mut self) -> Type {
         let token = self.peek();
 
-        if token.starts_with("(") {
-            self.read_list()
-        } else if token.starts_with("[") {
-            self.read_vector()
-        } else if token.starts_with("\"") {
-            self.read_string()
-        } else if token.starts_with(":") {
-            self.read_keyword()
-        } else {
-            self.read_atom()
+        match token.chars().nth(0).unwrap() {
+            '(' => self.read_list(),
+            '[' => self.read_vector(),
+            '{' => self.read_hash_map(),
+            '"' => self.read_string(),
+            ':' => self.read_keyword(),
+            _ => self.read_atom(),
         }
     }
 
@@ -76,6 +75,34 @@ impl Reader {
         }
 
         items
+    }
+
+    fn read_hash_map(&mut self) -> Type {
+        let mut hash_map = HashMap::new();
+
+        self.next(); // skip "{"
+
+        let mut key = None;
+        loop {
+            let item = self.peek();
+
+            if item == "}" {
+                break;
+            } else {
+                match key {
+                    Some(k) => {
+                        hash_map.insert(k, Box::new(self.read_form()));
+                        key = None
+                    }
+                    None => key = Some(item.to_owned()),
+                }
+            }
+            if let None = self.next() {
+                break;
+            }
+        }
+
+        Type::HashMap(hash_map)
     }
 
     fn read_keyword(&mut self) -> Type {
