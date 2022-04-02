@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::Read;
 
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
@@ -29,6 +31,7 @@ impl Namespace {
         ns.data.insert(String::from("prn"), prn);
         ns.data.insert(String::from("println"), println);
         ns.data.insert(String::from("read-string"), read_string);
+        ns.data.insert(String::from("slurp"), slurp);
         ns.data.insert(String::from("list"), list);
         ns.data.insert(String::from("list?"), is_list);
         ns.data.insert(String::from("empty?"), is_empty);
@@ -179,6 +182,19 @@ fn read_string(args: Args) -> Ret {
     match args.get(0) {
         Some(Type::String(ref input)) => Ok(read_str(input)),
         _ => Err(format!("Type error: must pass a string to read-string")),
+    }
+}
+
+fn slurp(args: Args) -> Ret {
+    match args.get(0) {
+        Some(Type::String(ref filename)) => {
+            let mut file = File::open(filename).map_err(|e| e.to_string())?;
+            let mut contents = String::new();
+            file.read_to_string(&mut contents)
+                .map_err(|e| e.to_string())?;
+            Ok(Type::String(contents))
+        }
+        _ => Err(format!("Type error: must pass a string to slurp")),
     }
 }
 

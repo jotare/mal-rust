@@ -4,6 +4,7 @@ CHANGELOG
 0.20.0
 ------
 - Implement `read-string` function
+- Implement `slurp` function
 
 0.19.0
 ------
