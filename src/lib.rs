@@ -176,6 +176,28 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                             Ok(closure)
                         }
 
+                        Type::Symbol(symbol) if symbol == "eval" => {
+                            if list.len() != 2 {
+                                return Err(format!(
+                                    "Malformed eval expression. Must pass one parameter"
+                                ));
+                            }
+
+                            let new_ast = eval(*list[1].to_owned(), env)?;
+                            let new_env = Rc::new(RefCell::new(Env::new(
+                                Some(Rc::new(env.borrow().to_owned())),
+                                &[],
+                                &[],
+                            )));
+
+                            tco_values = Some(TcoVals {
+                                ast: Some(new_ast),
+                                env: Some(new_env),
+                            });
+
+                            continue 'tco
+                        }
+
                         _ => {
                             // eval list and call first item as a
                             // function and the rest as its arguments

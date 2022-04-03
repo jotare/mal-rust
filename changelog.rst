@@ -5,6 +5,7 @@ CHANGELOG
 ------
 - Implement `read-string` function
 - Implement `slurp` function
+- Implement `eval` as a new symbol in the REPL
 
 0.19.0
 ------
