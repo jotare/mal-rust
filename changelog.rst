@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+0.20.1
+------
+- Fix eval to use the outermost environment
+- Update Env to use RefCell on data and not in outer.
+- Remove RefCell wrapping the REPL env
+
 0.20.0
 ------
 - Implement `read-string` function

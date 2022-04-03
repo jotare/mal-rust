@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::rc::Rc;
 
 use rustyline::error::ReadlineError;
@@ -16,7 +15,7 @@ fn main() {
         println!("Creating history at '{}'", history);
     }
 
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
 
     // Define `not` using the interpreter itself
     mal_rust::rep("(def! not (fn* (a) (if a false true)))", &env);

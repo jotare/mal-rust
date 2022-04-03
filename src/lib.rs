@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -22,10 +21,10 @@ fn read(input: &str) -> Option<Type> {
 
 struct TcoVals {
     ast: Option<Type>,
-    env: Option<Rc<RefCell<Env>>>,
+    env: Option<Rc<Env>>,
 }
 
-fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
+fn eval(ast: Type, env: &Rc<Env>) -> Ret {
     let mut ast = ast;
     let mut tco_env = env.clone(); // use as owner
     let mut env; // reuse parameter names but use them as mutable
@@ -62,7 +61,7 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                             };
                             let value = *list[2].to_owned();
                             let value = eval(value, env)?;
-                            env.borrow_mut().set(&key, value.clone());
+                            env.set(&key, value.clone());
                             Ok(value)
                         }
 
@@ -71,11 +70,11 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                                 return Err(format!("let* must be called with 2 arguments"));
                             }
 
-                            let scope_env = Rc::new(RefCell::new(Env::new(
-                                Some(Rc::new(env.borrow().clone())),
+                            let scope_env = Rc::new(Env::new(
+                                Some(env.clone()),
                                 &[],
                                 &[],
-                            )));
+                            ));
 
                             let binding_list = match *list[1].to_owned() {
                                 Type::List(seq) | Type::Vector(seq) => seq,
@@ -96,7 +95,7 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                                 let value = *binding_list[i + 1].to_owned();
                                 let value = eval(value, &scope_env)?;
 
-                                scope_env.borrow_mut().set(&symbol, value);
+                                scope_env.set(&symbol, value);
 
                                 i += 2;
                             }
@@ -170,7 +169,7 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                             let closure = Type::Closure {
                                 params: Box::new(params),
                                 body: Box::new(body),
-                                env: Rc::clone(env),
+                                env: env.clone(),
                             };
 
                             Ok(closure)
@@ -183,16 +182,9 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                                 ));
                             }
 
-                            let new_ast = eval(*list[1].to_owned(), env)?;
-                            let new_env = Rc::new(RefCell::new(Env::new(
-                                Some(Rc::new(env.borrow().to_owned())),
-                                &[],
-                                &[],
-                            )));
-
                             tco_values = Some(TcoVals {
-                                ast: Some(new_ast),
-                                env: Some(new_env),
+                                ast: Some(eval(*list[1].to_owned(), env)?),
+                                env: Some(env.outermost()),
                             });
 
                             continue 'tco
@@ -239,14 +231,14 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
                                     };
 
                                     let fun_env = Env::new(
-                                        Some(Rc::new(env.borrow().to_owned())),
+                                        Some(env.clone()),
                                         &params,
                                         args.as_slice(),
                                     );
 
                                     tco_values = Some(TcoVals {
                                         ast: Some(*body.to_owned()),
-                                        env: Some(Rc::new(RefCell::new(fun_env))),
+                                        env: Some(Rc::new(fun_env)),
                                     });
                                     continue 'tco;
                                 }
@@ -265,9 +257,9 @@ fn eval(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
     result
 }
 
-fn eval_ast(ast: Type, env: &Rc<RefCell<Env>>) -> Ret {
+fn eval_ast(ast: Type, env: &Rc<Env>) -> Ret {
     match ast {
-        Type::Symbol(sym) => match env.borrow().get(sym.as_str()) {
+        Type::Symbol(sym) => match env.get(sym.as_str()) {
             Ok(value) => Ok(value),
             Err(e) => Err(e),
         },
@@ -311,7 +303,7 @@ fn print(ast: Result<Type, String>) -> String {
     }
 }
 
-pub fn rep(input: &str, env: &Rc<RefCell<Env>>) -> String {
+pub fn rep(input: &str, env: &Rc<Env>) -> String {
     let parsed_input = read(input);
     match parsed_input {
         Some(ast) => print(eval(ast, env)),

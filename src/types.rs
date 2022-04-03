@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -18,7 +17,7 @@ pub enum Type {
     HashMap(HashMap<String, Box<Type>>),
     Fun(Function),
     Closure {
-        env: Rc<RefCell<Env>>,
+        env: Rc<Env>,
         params: Box<Type>,
         body: Box<Type>,
     },
