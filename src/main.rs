@@ -1,3 +1,6 @@
+use std::error::Error;
+use std::fs::File;
+use std::io::Read;
 use std::rc::Rc;
 
 use rustyline::error::ReadlineError;
@@ -6,7 +9,7 @@ use rustyline::Editor;
 use mal_rust;
 use mal_rust::env::Env;
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let prompt = "mal-rust> ";
     let history = ".history";
 
@@ -17,8 +20,14 @@ fn main() {
 
     let env = Rc::new(Env::new_default());
 
-    // Define `not` using the interpreter itself
-    mal_rust::rep("(def! not (fn* (a) (if a false true)))", &env);
+    // Definitions using the interpreter itself
+    let mut file = File::open("src/core.mal")?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+
+    for line in contents.lines() {
+        mal_rust::rep(line, &env);
+    }
 
     loop {
         let input = rl.readline(&prompt);
@@ -44,4 +53,6 @@ fn main() {
     }
 
     rl.save_history(&history).unwrap();
+
+    Ok(())
 }

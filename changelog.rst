@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.21.0
+------
+- Definitions using the interpreter itself are read from a file
+
 0.20.1
 ------
 - Fix eval to use the outermost environment
