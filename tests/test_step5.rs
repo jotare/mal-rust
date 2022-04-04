@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::rc::Rc;
 
 use mal_rust;
@@ -6,7 +5,7 @@ use mal_rust::env::Env;
 
 #[test]
 fn testing_recursive_tail_call_functions() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
 
     mal_rust::rep(
         "(def! sum2 (fn* (n acc) (if (= n 0) acc (sum2 (- n 1) (+ n acc)))))",
@@ -20,7 +19,7 @@ fn testing_recursive_tail_call_functions() {
 
 #[test]
 fn test_mutually_recursive_tail_call_functions() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
 
     mal_rust::rep("(def! foo (fn* (n) (if (= n 0) 0 (bar (- n 1)))))", &env);
     mal_rust::rep("(def! bar (fn* (n) (if (= n 0) 0 (foo (- n 1)))))", &env);

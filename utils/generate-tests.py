@@ -74,7 +74,7 @@ for test in tests:
     print(f"""\
 #[test]
 fn {test_name}() {{
-    let env = Rc::new(RefCell::new(Env::new_default()));\
+    let env = Rc::new(Env::new_default());\
 """)
 
     for case in test["cases"]:

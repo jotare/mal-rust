@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::rc::Rc;
 
 use mal_rust;
@@ -6,7 +5,7 @@ use mal_rust::env::Env;
 
 #[test]
 fn testing_list_functions() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(mal_rust::rep("(list)", &env), "()");
     assert_eq!(mal_rust::rep("(list? (list))", &env), "true");
     assert_eq!(mal_rust::rep("(empty? (list))", &env), "true");
@@ -27,7 +26,7 @@ fn testing_list_functions() {
 
 #[test]
 fn testing_if_form() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(mal_rust::rep("(if true 7 8)", &env), "7");
     assert_eq!(mal_rust::rep("(if false 7 8)", &env), "8");
     assert_eq!(mal_rust::rep("(if false 7 false)", &env), "false");
@@ -42,7 +41,7 @@ fn testing_if_form() {
 
 #[test]
 fn testing_1_way_if_form() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(mal_rust::rep("(if false (+ 1 7))", &env), "nil");
     assert_eq!(mal_rust::rep("(if nil 8)", &env), "nil");
     assert_eq!(mal_rust::rep("(if nil 8 7)", &env), "7");
@@ -51,7 +50,7 @@ fn testing_1_way_if_form() {
 
 #[test]
 fn testing_basic_conditionals() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
 
     // Test '='
     assert_eq!(mal_rust::rep("(= 2 1)", &env), "false");
@@ -85,7 +84,7 @@ fn testing_basic_conditionals() {
 
 #[test]
 fn testing_equality() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(mal_rust::rep("(= 1 1)", &env), "true");
     assert_eq!(mal_rust::rep("(= 0 0)", &env), "true");
     assert_eq!(mal_rust::rep("(= 1 0)", &env), "false");
@@ -105,7 +104,7 @@ fn testing_equality() {
 
 #[test]
 fn testing_builtin_and_user_defined_functions() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(mal_rust::rep("(+ 1 2)", &env), "3");
     assert_eq!(mal_rust::rep("( (fn* (a b) (+ b a)) 3 4)", &env), "7");
     assert_eq!(mal_rust::rep("( (fn* () 4) )", &env), "4");
@@ -118,7 +117,7 @@ fn testing_builtin_and_user_defined_functions() {
 
 #[test]
 fn testing_closures() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(
         mal_rust::rep("( ( (fn* (a) (fn* (b) (+ a b))) 5) 7)", &env),
         "12"
@@ -138,7 +137,7 @@ use gag::BufferRedirect;
 
 #[test]
 fn testing_do_form() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
 
     assert_eq!(mal_rust::rep("(do (+ 2 3) (+ 4 5))", &env), "9");
 
@@ -149,7 +148,7 @@ fn testing_do_form() {
 #[test]
 #[ignore]
 fn testing_do_form_with_prn() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     let mut buf = BufferRedirect::stdout().unwrap();
     let mut output = String::new();
 
@@ -174,14 +173,14 @@ fn testing_do_form_with_prn() {
 
 #[test]
 fn testing_special_form_case_sensitivity() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     mal_rust::rep("(def! DO (fn* (a) 7))", &env);
     assert_eq!(mal_rust::rep("(DO 3)", &env), "7");
 }
 
 #[test]
 fn testing_recursive_sumdown_function() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     mal_rust::rep(
         "(def! sumdown (fn* (N) (if (> N 0) (+ N (sumdown  (- N 1))) 0)))",
         &env,
@@ -193,7 +192,7 @@ fn testing_recursive_sumdown_function() {
 
 #[test]
 fn testing_recursive_fibonacci_function() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     mal_rust::rep(
         "(def! fib (fn* (N) (if (= N 0) 1 (if (= N 1) 1 (+ (fib (- N 1)) (fib (- N 2)))))))",
         &env,
@@ -208,7 +207,7 @@ fn testing_recursive_fibonacci_function() {
 
 #[test]
 fn testing_recursive_function_in_environment() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(mal_rust::rep("(let* (x 4 f (fn* () x) x 3) (f))", &env), "3");
     assert_eq!(
         mal_rust::rep(

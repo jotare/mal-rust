@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::rc::Rc;
 
 use mal_rust;
@@ -6,7 +5,7 @@ use mal_rust::env::Env;
 
 #[test]
 fn testing_def() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(mal_rust::rep("(def! x 3)", &env), "3");
     assert_eq!(mal_rust::rep("x", &env), "3");
     assert_eq!(mal_rust::rep("(def! x 4)", &env), "4");
@@ -17,7 +16,7 @@ fn testing_def() {
 
 #[test]
 fn verifying_symbols_are_case_sensitive() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(mal_rust::rep("(def! mynum 111)", &env), "111");
     assert_eq!(mal_rust::rep("(def! MYNUM 222)", &env), "222");
     assert_eq!(mal_rust::rep("mynum", &env), "111");
@@ -26,7 +25,7 @@ fn verifying_symbols_are_case_sensitive() {
 
 #[test]
 fn check_that_error_aborts_def() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(
         mal_rust::rep("(abc 1 2 3)", &env),
         "Symbol 'abc' not found in any environment"
@@ -39,7 +38,7 @@ fn check_that_error_aborts_def() {
 
 #[test]
 fn testing_let() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(mal_rust::rep("(let* (z 9) z)", &env), "9");
     assert_eq!(mal_rust::rep("(let* (x 9) x)", &env), "9");
     assert_eq!(mal_rust::rep("(let* (z (+ 2 3)) (+ 1 z))", &env), "6");
@@ -52,7 +51,7 @@ fn testing_let() {
 
 #[test]
 fn testing_outer_environment() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(mal_rust::rep("(def! a 4)", &env), "4");
     assert_eq!(mal_rust::rep("(let* (q 9) q)", &env), "9");
     assert_eq!(mal_rust::rep("(let* (q 9) a)", &env), "4");
@@ -61,7 +60,7 @@ fn testing_outer_environment() {
 
 #[test]
 fn testing_let_with_vector_bindings() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(mal_rust::rep("(let* [z 9] z)", &env), "9");
     assert_eq!(
         mal_rust::rep("(let* [p (+ 2 3) q (+ 2 p)] (+ p q))", &env),
@@ -71,7 +70,7 @@ fn testing_let_with_vector_bindings() {
 
 #[test]
 fn testing_vector_evaluation() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(
         mal_rust::rep("(let* (a 5 b 6) [3 4 a [b 7] 8])", &env),
         "[3 4 5 [6 7] 8]"
@@ -80,6 +79,6 @@ fn testing_vector_evaluation() {
 
 #[test]
 fn check_that_last_assignment_takes_priority() {
-    let env = Rc::new(RefCell::new(Env::new_default()));
+    let env = Rc::new(Env::new_default());
     assert_eq!(mal_rust::rep("(let* (x 2 x 3) x)", &env), "3");
 }
