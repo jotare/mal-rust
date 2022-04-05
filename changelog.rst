@@ -4,6 +4,7 @@ CHANGELOG
 0.21.0
 ------
 - Definitions using the interpreter itself are read from a file
+- Add load-file to core.mal definitions
 
 0.20.1
 ------
