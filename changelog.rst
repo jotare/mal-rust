@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.22.0
+------
+- Implement `Atom` type
+
 0.21.0
 ------
 - Definitions using the interpreter itself are read from a file

@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -12,6 +13,7 @@ pub enum Type {
     Symbol(String),
     Keyword(String),
     String(String),
+    Atom(Rc<RefCell<Type>>),
     List(Vec<Box<Type>>),
     Vector(Vec<Box<Type>>),
     HashMap(HashMap<String, Box<Type>>),

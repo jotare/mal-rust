@@ -45,6 +45,9 @@ fn pr_type(t: &Type, print_readably: bool) -> String {
 
             s.push_str(&format!("\"{}\"", repr));
         }
+        Type::Atom(atom) => {
+            s.push_str(&pr_type(&atom.borrow(), print_readably));
+        }
         Type::List(list) => {
             s.push('(');
             s.push_str(pr_seq(&list, print_readably).as_str());
