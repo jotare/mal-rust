@@ -13,10 +13,7 @@ mod reader;
 mod types;
 
 fn read(input: &str) -> Option<Type> {
-    if input.starts_with(";") {
-        return None;
-    }
-    Some(reader::read_str(input))
+    reader::read_str(input)
 }
 
 struct TcoVals {

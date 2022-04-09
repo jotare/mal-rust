@@ -151,10 +151,14 @@ impl Reader {
 
 /// Reads a string of text and return a correct Abstract Syntax Tree
 /// of the tokenized input.
-pub fn read_str(input: &str) -> Type {
+pub fn read_str(input: &str) -> Option<Type> {
+    if input.starts_with(";") || input.len() == 0 {
+        return None;
+    }
+
     let tokens = tokenize(input);
     let mut reader = Reader::new(tokens);
-    reader.read_form()
+    Some(reader.read_form())
 }
 
 /// Tokenize the input stream and returns a list of tokens
@@ -163,7 +167,7 @@ pub fn tokenize(input: &str) -> Vec<Token> {
         static ref RE: Regex = Regex::new(
             "[\\s ,]*(~@|[\\[\\]{}()'`~^@]|\"(?:\\\\.|[^\\\\\"])*\"?|;.*|[^\\s\\[\\]{}('\"`,;)]*)",
         )
-        .unwrap();
+            .unwrap();
     }
 
     let tokens = RE
@@ -236,25 +240,25 @@ mod tests {
     fn test_read_str() {
         use crate::types::Type;
 
-        assert_eq!(read_str("123"), Type::Int(123));
+        assert_eq!(read_str("123"), Some(Type::Int(123)));
 
-        assert_eq!(read_str("abc"), Type::Symbol(String::from("abc")));
+        assert_eq!(read_str("abc"), Some(Type::Symbol(String::from("abc"))));
 
-        assert_eq!(read_str("\"hello\""), Type::String(String::from("hello")));
+        assert_eq!(read_str("\"hello\""), Some(Type::String(String::from("hello"))));
 
         assert_eq!(
             read_str("(123 456)"),
-            Type::List(vec![Box::new(Type::Int(123)), Box::new(Type::Int(456)),])
+            Some(Type::List(vec![Box::new(Type::Int(123)), Box::new(Type::Int(456)),]))
         );
 
         assert_eq!(
             read_str("[123 456]"),
-            Type::Vector(vec![Box::new(Type::Int(123)), Box::new(Type::Int(456)),])
+            Some(Type::Vector(vec![Box::new(Type::Int(123)), Box::new(Type::Int(456)),]))
         );
 
         assert_eq!(
             read_str("( + 2 (* 3 4) )"),
-            Type::List(vec![
+            Some(Type::List(vec![
                 Box::new(Type::Symbol(String::from("+"))),
                 Box::new(Type::Int(2)),
                 Box::new(Type::List(vec![
@@ -262,7 +266,12 @@ mod tests {
                     Box::new(Type::Int(3)),
                     Box::new(Type::Int(4)),
                 ])),
-            ])
+            ]))
+        );
+
+        assert_eq!(
+            read_str(";; comments"),
+            None
         );
     }
 }

@@ -5,6 +5,7 @@ CHANGELOG
 ------
 - Implement `Atom` type
 - Add doc to Env public functions
+- Comments are detected in reader.read_str instead of read
 
 0.21.0
 ------
