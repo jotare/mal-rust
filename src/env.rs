@@ -12,6 +12,11 @@ pub struct Env {
 }
 
 impl Env {
+    /// Create a new environment with outer as its outer
+    /// environment. Pass binds and exprs to directly set key-value
+    /// pairs in the environment.
+    ///
+    /// Panics if binds and exprs don't have the same size
     pub fn new(outer: Option<Rc<Env>>, binds: &[&str], exprs: &[Type]) -> Env {
         if binds.len() != exprs.len() {
             panic!("`binds` and `exprs` must have the same length");
@@ -27,6 +32,7 @@ impl Env {
         env
     }
 
+    /// Create a new environment with the default built-in symbols and functions
     pub fn new_default() -> Env {
         let env = Env::new(None, &[], &[]);
         let ns = Namespace::new_default();
@@ -36,6 +42,7 @@ impl Env {
         env
     }
 
+    /// Set a symbol to a value in the environment
     pub fn set(&self, symbol: &str, value: Type) {
         self.data.borrow_mut().insert(symbol.to_owned(), value);
     }
@@ -50,6 +57,10 @@ impl Env {
         }
     }
 
+    /// Return the value assigned to the symbol in this or any nested
+    /// environment.
+    ///
+    /// Returns an error if the symbol is not found
     pub fn get(&self, symbol: &str) -> Result<Type, String> {
         match self.find(symbol) {
             Some(env) => match env.data.borrow().get(symbol) {
@@ -73,6 +84,7 @@ impl Env {
         }
     }
 
+    /// Returns the outermost environment (may be itself)
     pub fn outermost(self: &Rc<Env>) -> Rc<Env> {
         match self._outermost() {
             Some(env) => env,

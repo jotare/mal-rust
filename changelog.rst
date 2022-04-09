@@ -4,6 +4,7 @@ CHANGELOG
 0.22.0
 ------
 - Implement `Atom` type
+- Add doc to Env public functions
 
 0.21.0
 ------
