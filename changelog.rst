@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.23.0
+------
+- Implement `atom`, `atom?`, `deref` and `reset!` functions
+
 0.22.0
 ------
 - Implement `Atom` type

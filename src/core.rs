@@ -1,6 +1,8 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
+use std::rc::Rc;
 
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
@@ -41,6 +43,10 @@ impl Namespace {
         ns.data.insert(String::from("<="), lte);
         ns.data.insert(String::from(">"), gt);
         ns.data.insert(String::from(">="), gte);
+        ns.data.insert(String::from("atom"), atom);
+        ns.data.insert(String::from("atom?"), atomp);
+        ns.data.insert(String::from("deref"), deref);
+        ns.data.insert(String::from("reset!"), reset);
         ns
     }
 }
@@ -281,5 +287,43 @@ fn gte(args: Args) -> Ret {
             Ok(Type::Bool(a >= b))
         }
         _ => Err(format!("Value error: must pass 2 arguments to '>='")),
+    }
+}
+
+
+fn atom(args: Args) -> Ret {
+    match args.get(0) {
+        Some(a) => Ok(Type::Atom(Rc::new(RefCell::new(a.clone())))),
+        None => Err(format!("Type error: must pass an argument to 'atom'")),
+    }
+}
+
+fn atomp(args: Args) -> Ret {
+    match args.get(0) {
+        Some(Type::Atom(_)) => Ok(Type::Bool(true)),
+        Some(_) => Ok(Type::Bool(false)),
+        None => Err(format!("Type error: must pass an argument to 'atom?'")),
+    }
+}
+
+fn deref(args: Args) -> Ret {
+    match args.get(0) {
+        Some(Type::Atom(atom)) => Ok(atom.borrow().clone()),
+        Some(_) => Err(format!("Type error: must pass an atom to 'deref'")),
+        None => Err(format!("Type error: must pass an argument to 'deref'")),
+    }
+}
+
+fn reset(args: Args) -> Ret {
+    match (args.get(0), args.get(1)) {
+        (Some(_), Some(Type::Atom(_))) => Err(format!(
+            "Type error: must pass a non atom type as second parameter"
+        )),
+        (Some(Type::Atom(atom)), Some(value)) => {
+            let mut atom_ref = (**atom).borrow_mut();
+            *atom_ref = value.clone();
+            Ok(value.clone())
+        }
+        _ => Err(format!("Type error: must pass two arguments to 'reset!'")),
     }
 }
