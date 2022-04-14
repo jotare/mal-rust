@@ -4,6 +4,7 @@ CHANGELOG
 0.23.0
 ------
 - Implement `atom`, `atom?`, `deref` and `reset!` functions
+- Print atom as `(atom X)`
 
 0.22.0
 ------
