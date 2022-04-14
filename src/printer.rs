@@ -52,14 +52,10 @@ fn pr_type(t: &Type, print_readably: bool) -> String {
             ));
         }
         Type::List(list) => {
-            s.push('(');
-            s.push_str(pr_seq(&list, print_readably).as_str());
-            s.push(')');
+            s.push_str(&format!("({})", pr_seq(&list, print_readably).as_str()));
         }
-        Type::Vector(list) => {
-            s.push('[');
-            s.push_str(pr_seq(&list, print_readably).as_str());
-            s.push(']');
+        Type::Vector(vector) => {
+            s.push_str(&format!("[{}]", pr_seq(&vector, print_readably).as_str()));
         }
         Type::HashMap(hashmap) => {
             s.push('{');
