@@ -7,6 +7,8 @@ use std::rc::Rc;
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 
+use crate::env::Env;
+use crate::eval;
 use crate::printer::pr_str;
 use crate::reader::read_str;
 use crate::types::{Args, Function, Ret, Type};
@@ -47,6 +49,7 @@ impl Namespace {
         ns.data.insert(String::from("atom?"), atomp);
         ns.data.insert(String::from("deref"), deref);
         ns.data.insert(String::from("reset!"), reset);
+        ns.data.insert(String::from("swap!"), swap);
         ns
     }
 }
@@ -326,4 +329,68 @@ fn reset(args: Args) -> Ret {
         }
         _ => Err(format!("Type error: must pass two arguments to 'reset!'")),
     }
+}
+
+/// Takes an atom, a function and zero or more arguments. Modifies
+/// the atoms value to the result of applying the function as the
+/// first parameter and the optionally given function arguments as
+/// the rest of the arguments.
+///
+/// Examples:
+/// (swap! atom (fn* (a) (* 2 a))) -- atom is now its old value x2
+/// (swap! atom (fn* (a b) (+ a b)) 10) -- atom is now its old value +10
+fn swap(args: Args) -> Ret {
+    if args.len() < 2 {
+        return Err(format!(
+            "Type error: must pass at least two arguments to 'swap!'"
+        ));
+    }
+
+    let (atom, atom_value) = match args.get(0) {
+        Some(Type::Atom(a)) => (a, a.borrow().clone()),
+        _ => {
+            return Err(format!(
+                "Type error: first argument to 'swap!' must be an atom"
+            ))
+        }
+    };
+
+    let mut f_args = Vec::with_capacity(1 + args[2..].len());
+    f_args.push(atom_value);
+    for arg in args[2..].iter() {
+        f_args.push(arg.to_owned())
+    }
+
+    let new_atom_value = match args.get(1) {
+        Some(Type::Fun(fun)) => fun(f_args)?,
+        Some(Type::Closure { env, params, body }) => {
+            let params = match **params {
+                Type::List(ref l) | Type::Vector(ref l) => {
+                    let param_list: Vec<&str> = l
+                        .iter()
+                        .map(|elem| match **elem {
+                            Type::Symbol(ref sym) => sym.as_str(),
+                            _ => "",
+                        })
+                        .filter(|elem| elem.len() > 0)
+                        .collect();
+                    param_list
+                }
+                _ => return Err(format!("Interpreter error: malformed closure!")),
+            };
+
+            let fun_env = Env::new(Some(env.clone()), &params, f_args.as_slice());
+
+            eval(*body.to_owned(), &Rc::new(fun_env))?
+        }
+        _ => {
+            return Err(format!(
+                "Type error: first argument to 'swap!' must be an function"
+            ))
+        }
+    };
+
+    *atom.borrow_mut() = new_atom_value.clone();
+
+    Ok(new_atom_value)
 }
