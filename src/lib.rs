@@ -12,7 +12,7 @@ mod printer;
 mod reader;
 mod types;
 
-fn read(input: &str) -> Option<Type> {
+fn read(input: &str) -> Result<Option<Type>, String> {
     reader::read_str(input)
 }
 
@@ -303,7 +303,8 @@ fn print(ast: Result<Type, String>) -> String {
 pub fn rep(input: &str, env: &Rc<Env>) -> String {
     let parsed_input = read(input);
     match parsed_input {
-        Some(ast) => print(eval(ast, env)),
-        None => String::new(),
+        Ok(Some(ast)) => print(eval(ast, env)),
+        Ok(None) => String::new(),
+        Err(e) => e,
     }
 }

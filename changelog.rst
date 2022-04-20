@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.24.0
+------
+- Read functions handle errors and return a `Result`
+
 0.23.0
 ------
 - Implement `atom`, `atom?`, `deref` and `reset!` functions

@@ -34,28 +34,31 @@ impl Reader {
         &self.tokens[self.position]
     }
 
-    fn read_form(&mut self) -> Type {
+    fn read_form(&mut self) -> Result<Type, String> {
         let token = self.peek();
 
         match token.chars().nth(0).unwrap() {
-            '(' => self.read_list(),
-            '[' => self.read_vector(),
-            '{' => self.read_hash_map(),
-            '"' => self.read_string(),
-            ':' => self.read_keyword(),
-            _ => self.read_atom(),
+            '(' => Ok(self.read_list()?),
+            '[' => Ok(self.read_vector()?),
+            '{' => Ok(self.read_hash_map()?),
+            '"' => Ok(self.read_string()?),
+            ':' => Ok(self.read_keyword()?),
+            ')' => Err(format!("Syntax error: unexpected ')'")),
+            ']' => Err(format!("Syntax error: unexpected ']'")),
+            '}' => Err(format!("Syntax error: unexpected '}}'")),
+            _ => Ok(self.read_atom()?),
         }
     }
 
-    fn read_list(&mut self) -> Type {
-        Type::List(self.read_seq(")"))
+    fn read_list(&mut self) -> Result<Type, String> {
+        Ok(Type::List(self.read_seq(")")?))
     }
 
-    fn read_vector(&mut self) -> Type {
-        Type::Vector(self.read_seq("]"))
+    fn read_vector(&mut self) -> Result<Type, String> {
+        Ok(Type::Vector(self.read_seq("]")?))
     }
 
-    fn read_seq(&mut self, end: &str) -> Vec<Box<Type>> {
+    fn read_seq(&mut self, end: &str) -> Result<Vec<Box<Type>>, String> {
         let mut items = Vec::new();
 
         self.next(); // skip "(", "["
@@ -66,7 +69,7 @@ impl Reader {
             if item == end {
                 break;
             } else {
-                items.push(Box::new(self.read_form()));
+                items.push(Box::new(self.read_form()?));
             }
 
             if let None = self.next() {
@@ -74,10 +77,10 @@ impl Reader {
             }
         }
 
-        items
+        Ok(items)
     }
 
-    fn read_hash_map(&mut self) -> Type {
+    fn read_hash_map(&mut self) -> Result<Type, String> {
         let mut hash_map = HashMap::new();
 
         self.next(); // skip "{"
@@ -91,7 +94,7 @@ impl Reader {
             } else {
                 match key {
                     Some(k) => {
-                        hash_map.insert(k, Box::new(self.read_form()));
+                        hash_map.insert(k, Box::new(self.read_form()?));
                         key = None
                     }
                     None => key = Some(item.to_owned()),
@@ -102,18 +105,18 @@ impl Reader {
             }
         }
 
-        Type::HashMap(hash_map)
+        Ok(Type::HashMap(hash_map))
     }
 
-    fn read_keyword(&mut self) -> Type {
+    fn read_keyword(&mut self) -> Result<Type, String> {
         let token = self.peek();
-        Type::Keyword(token[1..].to_string())
+        Ok(Type::Keyword(token[1..].to_string()))
     }
 
-    fn read_atom(&mut self) -> Type {
+    fn read_atom(&mut self) -> Result<Type, String> {
         let token = self.peek();
 
-        match token.as_str() {
+        Ok(match token.as_str() {
             "nil" => Type::Nil,
             "true" => Type::Bool(true),
             "false" => Type::Bool(false),
@@ -128,10 +131,10 @@ impl Reader {
                     Type::Symbol(other.to_owned())
                 }
             }
-        }
+        })
     }
 
-    fn read_string(&mut self) -> Type {
+    fn read_string(&mut self) -> Result<Type, String> {
         let token = self.peek();
         let token = token[1..token.len() - 1].to_string();
         lazy_static! {
@@ -145,20 +148,21 @@ impl Reader {
                 _ => panic!("Impossible capture {}", &cap[0]),
             })
             .to_string();
-        Type::String(string)
+        Ok(Type::String(string))
     }
 }
 
 /// Reads a string of text and return a correct Abstract Syntax Tree
 /// of the tokenized input.
-pub fn read_str(input: &str) -> Option<Type> {
+pub fn read_str(input: &str) -> Result<Option<Type>, String> {
     if input.starts_with(";") || input.len() == 0 {
-        return None;
+        return Ok(None);
     }
 
     let tokens = tokenize(input);
     let mut reader = Reader::new(tokens);
-    Some(reader.read_form())
+    let ast = reader.read_form()?;
+    Ok(Some(ast))
 }
 
 /// Tokenize the input stream and returns a list of tokens
@@ -240,25 +244,34 @@ mod tests {
     fn test_read_str() {
         use crate::types::Type;
 
-        assert_eq!(read_str("123"), Some(Type::Int(123)));
+        assert_eq!(read_str("123"), Ok(Some(Type::Int(123))));
 
-        assert_eq!(read_str("abc"), Some(Type::Symbol(String::from("abc"))));
+        assert_eq!(read_str("abc"), Ok(Some(Type::Symbol(String::from("abc")))));
 
-        assert_eq!(read_str("\"hello\""), Some(Type::String(String::from("hello"))));
+        assert_eq!(
+            read_str("\"hello\""),
+            Ok(Some(Type::String(String::from("hello"))))
+        );
 
         assert_eq!(
             read_str("(123 456)"),
-            Some(Type::List(vec![Box::new(Type::Int(123)), Box::new(Type::Int(456)),]))
+            Ok(Some(Type::List(vec![
+                Box::new(Type::Int(123)),
+                Box::new(Type::Int(456)),
+            ])))
         );
 
         assert_eq!(
             read_str("[123 456]"),
-            Some(Type::Vector(vec![Box::new(Type::Int(123)), Box::new(Type::Int(456)),]))
+            Ok(Some(Type::Vector(vec![
+                Box::new(Type::Int(123)),
+                Box::new(Type::Int(456)),
+            ])))
         );
 
         assert_eq!(
             read_str("( + 2 (* 3 4) )"),
-            Some(Type::List(vec![
+            Ok(Some(Type::List(vec![
                 Box::new(Type::Symbol(String::from("+"))),
                 Box::new(Type::Int(2)),
                 Box::new(Type::List(vec![
@@ -266,12 +279,9 @@ mod tests {
                     Box::new(Type::Int(3)),
                     Box::new(Type::Int(4)),
                 ])),
-            ]))
+            ])))
         );
 
-        assert_eq!(
-            read_str(";; comments"),
-            None
-        );
+        assert_eq!(read_str(";; comments"), Ok(None));
     }
 }

@@ -189,12 +189,13 @@ fn println(args: Args) -> Ret {
 
 fn read_string(args: Args) -> Ret {
     match args.get(0) {
-        Some(Type::String(ref input)) => {
+        Some(Type::String(input)) => {
             match read_str(input) {
-                Some(ast) => Ok(ast),
-                None => Ok(Type::Nil),
+                Ok(Some(s)) => Ok(s),
+                Ok(None) => Err(String::new()),
+                Err(e) => Err(e),
             }
-        },
+        }
         _ => Err(format!("Type error: must pass a string to read-string")),
     }
 }
