@@ -155,11 +155,10 @@ impl Reader {
 /// Reads a string of text and return a correct Abstract Syntax Tree
 /// of the tokenized input.
 pub fn read_str(input: &str) -> Result<Option<Type>, String> {
-    if input.starts_with(";") || input.len() == 0 {
+    let tokens = tokenize(input);
+    if tokens.is_empty() {
         return Ok(None);
     }
-
-    let tokens = tokenize(input);
     let mut reader = Reader::new(tokens);
     let ast = reader.read_form()?;
     Ok(Some(ast))
@@ -168,15 +167,22 @@ pub fn read_str(input: &str) -> Result<Option<Type>, String> {
 /// Tokenize the input stream and returns a list of tokens
 pub fn tokenize(input: &str) -> Vec<Token> {
     lazy_static! {
-        static ref RE: Regex = Regex::new(
-            "[\\s ,]*(~@|[\\[\\]{}()'`~^@]|\"(?:\\\\.|[^\\\\\"])*\"?|;.*|[^\\s\\[\\]{}('\"`,;)]*)",
-        )
-            .unwrap();
+        static ref RE: Regex =
+            Regex::new(r#"[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"?|;.*|[^\s\[\]{}('"`,;)]+)"#)
+                .unwrap();
     }
 
     let tokens = RE
         .captures_iter(input)
-        .map(|capture| capture[1].to_owned())
+        .filter_map(|capture| {
+            let token = capture[1].to_owned();
+            if token.starts_with(";") {
+                // comment
+                None
+            } else {
+                Some(token)
+            }
+        })
         .collect();
 
     tokens

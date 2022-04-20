@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.24.1
+------
+- Fix wrong behavior while reading comments
+
 0.24.0
 ------
 - Read functions handle errors and return a `Result`
