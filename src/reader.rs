@@ -30,12 +30,16 @@ impl Reader {
         }
     }
 
-    fn peek(&self) -> &Token {
-        &self.tokens[self.position]
+    fn peek(&self) -> Result<&Token, String> {
+        if self.position < self.tokens.len() {
+            Ok(&self.tokens[self.position])
+        } else {
+            Err(format!("Syntax error: unexpected EOF while parsing"))
+        }
     }
 
     fn read_form(&mut self) -> Result<Type, String> {
-        let token = self.peek();
+        let token = self.peek()?;
 
         match token.chars().nth(0).unwrap() {
             '(' => Ok(self.read_list()?),
@@ -64,7 +68,7 @@ impl Reader {
         self.next(); // skip "(", "["
 
         loop {
-            let item = self.peek();
+            let item = self.peek()?;
 
             if item == end {
                 break;
@@ -87,7 +91,7 @@ impl Reader {
 
         let mut key = None;
         loop {
-            let item = self.peek();
+            let item = self.peek()?;
 
             if item == "}" {
                 break;
@@ -109,12 +113,12 @@ impl Reader {
     }
 
     fn read_keyword(&mut self) -> Result<Type, String> {
-        let token = self.peek();
+        let token = self.peek()?;
         Ok(Type::Keyword(token[1..].to_string()))
     }
 
     fn read_atom(&mut self) -> Result<Type, String> {
-        let token = self.peek();
+        let token = self.peek()?;
 
         Ok(match token.as_str() {
             "nil" => Type::Nil,
@@ -135,7 +139,7 @@ impl Reader {
     }
 
     fn read_string(&mut self) -> Result<Type, String> {
-        let token = self.peek();
+        let token = self.peek()?;
         let token = token[1..token.len() - 1].to_string();
         lazy_static! {
             static ref RE: Regex = Regex::new(r#"(\\n|\\\\|\\")"#).unwrap();

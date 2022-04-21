@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.25.0
+------
+- Add error checking to reader to make sure parens are properly
+  matched
+
 0.24.1
 ------
 - Fix wrong behavior while reading comments
