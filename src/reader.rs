@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use lazy_static::lazy_static;
-use regex::{Captures, Regex};
+use regex::Regex;
 
-use crate::types::Type;
+use crate::{types::Type, utils::unescape_string};
 
 type Token = String;
 
@@ -141,17 +141,7 @@ impl Reader {
     fn read_string(&mut self) -> Result<Type, String> {
         let token = self.peek()?;
         let token = token[1..token.len() - 1].to_string();
-        lazy_static! {
-            static ref RE: Regex = Regex::new(r#"(\\n|\\\\|\\")"#).unwrap();
-        }
-        let string = RE
-            .replace_all(&token, |cap: &Captures| match &cap[0] {
-                "\\\"" => "\"",
-                "\\n" => "\n",
-                "\\\\" => "\\",
-                _ => panic!("Impossible capture {}", &cap[0]),
-            })
-            .to_string();
+        let string = unescape_string(&token);
         Ok(Type::String(string))
     }
 }

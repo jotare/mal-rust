@@ -11,6 +11,7 @@ pub mod env;
 mod printer;
 mod reader;
 mod types;
+mod utils;
 
 fn read(input: &str) -> Result<Option<Type>, String> {
     reader::read_str(input)

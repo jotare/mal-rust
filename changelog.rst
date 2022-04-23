@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.26.0
+------
+- Move escape and unescape string functionality into a utils module
+
 0.25.0
 ------
 - Add error checking to reader to make sure parens are properly

@@ -1,4 +1,5 @@
 use crate::types::Type;
+use crate::utils::escape_string;
 
 /// Format an Type and returns it's string representation
 pub fn pr_str(ast: Type, print_readably: bool) -> String {
@@ -29,16 +30,7 @@ fn pr_type(t: &Type, print_readably: bool) -> String {
         Type::Keyword(keyword) => s.push_str(&format!(":{}", keyword)),
         Type::String(string) => {
             let repr = if print_readably {
-                string
-                    .chars()
-                    .map(|c| match c {
-                        '"' => "\\\"".to_string(),
-                        '\\' => "\\\\".to_string(),
-                        '\n' => "\\n".to_string(),
-                        _ => c.to_string(),
-                    })
-                    .collect::<Vec<String>>()
-                    .join("")
+                escape_string(string)
             } else {
                 string.clone()
             };
