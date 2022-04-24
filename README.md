@@ -34,14 +34,41 @@ mal-rust
 
 ## Tests
 
+### Rust tests
+
+The rust tests are translated from original mal project tests to rust
+to be run with `cargo`.
+
 Run basic tests with
 ```bash
 cargo test
 ```
 
-Run full suite with:
+Some tests (like tests to check print statements) need the
+`--nocapture` flat. To run them, execute:
 ```bash
 cargo test -- --nocapture --include-ignored
 ```
 
-`--nocapture` flag is needed to test print statements.
+### Mal tests
+
+To run mal tests, the original `runtest.py` and mal project tests are
+included in this project. To execute them, from the projects root
+execute:
+```bash
+python3 runtest.py mal-tests/<STEP-N>.mal -- path/to/executable
+```
+
+For example, to run step 6 tests with the release executable, run:
+```bash
+cargo build --release
+python3 runtest.py mal-tests/step6_file.mal -- target/release/mal-rust
+```
+
+To run all tests, you can use shell regex as in this example:
+```bash
+for test in $(ls tests/step[2-9A]*); do 
+    python3 runtest.py $test -- target/debug/mal-rust
+    sleep 2
+done
+```

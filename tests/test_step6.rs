@@ -48,11 +48,11 @@ fn testing_read_string_eval_and_slurp() {
         "5"
     );
     assert_eq!(
-        mal_rust::rep("(slurp \"tests/res/test.txt\")", &env),
+        mal_rust::rep("(slurp \"mal-tests/test.txt\")", &env),
         "\"A line of text\\n\""
     );
     assert_eq!(
-        mal_rust::rep("(slurp \"tests/res/test.txt\")", &env),
+        mal_rust::rep("(slurp \"mal-tests/test.txt\")", &env),
         "\"A line of text\\n\""
     );
 }
@@ -63,7 +63,7 @@ fn testing_load_file() -> Result<(), Box<dyn Error>> {
     common::load_core(&env)?;
 
     assert_eq!(
-        mal_rust::rep("(load-file \"tests/res/inc.mal\")", &env),
+        mal_rust::rep("(load-file \"mal-tests/inc.mal\")", &env),
         "nil"
     );
     assert_eq!(
@@ -169,7 +169,7 @@ fn testing_reading_of_large_files() -> Result<(), Box<dyn Error>> {
     common::load_core(&env)?;
 
     assert_eq!(
-        mal_rust::rep("(load-file \"tests/res/computations.mal\")", &env),
+        mal_rust::rep("(load-file \"mal-tests/computations.mal\")", &env),
         "nil"
     );
     assert_eq!(
@@ -240,7 +240,7 @@ fn testing_comments_in_a_file() -> Result<(), Box<dyn Error>> {
     common::load_core(&env)?;
 
     assert_eq!(
-        mal_rust::rep("(load-file \"tests/res/incB.mal\")", &env),
+        mal_rust::rep("(load-file \"mal-tests/incB.mal\")", &env),
         "nil"
     );
     assert_eq!(
@@ -261,7 +261,7 @@ fn testing_map_literal_across_multiple_lines_in_a_file() -> Result<(), Box<dyn E
     common::load_core(&env)?;
 
     assert_eq!(
-        mal_rust::rep("(load-file \"tests/res/incC.mal\")", &env),
+        mal_rust::rep("(load-file \"mal-tests/incC.mal\")", &env),
         "nil"
     );
     assert_eq!(

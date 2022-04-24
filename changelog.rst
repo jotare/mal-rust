@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.27.0
+------
+- Add MAL tests and test runner (runtests.py)
+
 0.26.0
 ------
 - Move escape and unescape string functionality into a utils module
