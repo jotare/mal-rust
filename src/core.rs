@@ -4,9 +4,6 @@ use std::fs::File;
 use std::io::Read;
 use std::rc::Rc;
 
-use lazy_static::lazy_static;
-use regex::{Captures, Regex};
-
 use crate::env::Env;
 use crate::eval;
 use crate::printer::pr_str;
@@ -124,25 +121,7 @@ fn pr_str_fun(args: Args) -> Ret {
 fn str_fun(args: Args) -> Ret {
     let s = args
         .iter()
-        .map(|arg| {
-            let mut s = pr_str(arg.clone(), false);
-            lazy_static! {
-                static ref RE: Regex = Regex::new(r#"(["][^"])|([^"]["])"#).unwrap();
-            }
-            s = RE
-                .replace_all(&s, |cap: &Captures| match &cap[0] {
-                    _ if cap[0].starts_with('"') => cap[0].replacen("\"", "", 1),
-                    _ if cap[0].ends_with('"') => cap[0].replacen("\"", "", 1),
-                    _ => panic!("Impossible capture {}", &cap[0]),
-                })
-                .to_string();
-
-            if s.len() > 0 && s.starts_with('"') {
-                s[1..s.len() - 1].to_string()
-            } else {
-                s
-            }
-        })
+        .map(|arg| pr_str(arg.to_owned(), false))
         .collect::<Vec<String>>()
         .join("");
 
@@ -152,7 +131,7 @@ fn str_fun(args: Args) -> Ret {
 fn prn(args: Args) -> Ret {
     let s = args
         .iter()
-        .map(|arg| pr_str(arg.clone(), true))
+        .map(|arg| pr_str(arg.to_owned(), true))
         .collect::<Vec<String>>()
         .join(" ");
 
@@ -163,23 +142,7 @@ fn prn(args: Args) -> Ret {
 fn println(args: Args) -> Ret {
     let s = args
         .iter()
-        .map(|arg| {
-            let mut s = pr_str(arg.clone(), false);
-            let re = Regex::new(r#"(["][^"])|([^"]["])"#).unwrap();
-            s = re
-                .replace_all(&s, |cap: &Captures| match &cap[0] {
-                    _ if cap[0].starts_with('"') => cap[0].replacen("\"", "", 1),
-                    _ if cap[0].ends_with('"') => cap[0].replacen("\"", "", 1),
-                    _ => panic!("Impossible capture {}", &cap[0]),
-                })
-                .to_string();
-
-            if s.len() > 0 && s.starts_with('"') {
-                s[1..s.len() - 1].to_string()
-            } else {
-                s
-            }
-        })
+        .map(|arg| pr_str(arg.to_owned(), false))
         .collect::<Vec<String>>()
         .join(" ");
 
@@ -189,13 +152,11 @@ fn println(args: Args) -> Ret {
 
 fn read_string(args: Args) -> Ret {
     match args.get(0) {
-        Some(Type::String(input)) => {
-            match read_str(input) {
-                Ok(Some(s)) => Ok(s),
-                Ok(None) => Err(String::new()),
-                Err(e) => Err(e),
-            }
-        }
+        Some(Type::String(input)) => match read_str(input) {
+            Ok(Some(s)) => Ok(s),
+            Ok(None) => Err(String::new()),
+            Err(e) => Err(e),
+        },
         _ => Err(format!("Type error: must pass a string to read-string")),
     }
 }

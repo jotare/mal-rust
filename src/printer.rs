@@ -29,13 +29,11 @@ fn pr_type(t: &Type, print_readably: bool) -> String {
         Type::Symbol(symbol) => s.push_str(&format!("{}", symbol)),
         Type::Keyword(keyword) => s.push_str(&format!(":{}", keyword)),
         Type::String(string) => {
-            let repr = if print_readably {
-                escape_string(string)
+            if print_readably {
+                s.push_str(&format!("\"{}\"", escape_string(&string)));
             } else {
-                string.clone()
-            };
-
-            s.push_str(&format!("\"{}\"", repr));
+                s.push_str(string);
+            }
         }
         Type::Atom(atom) => {
             s.push_str(&format!(

@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.27.1
+------
+- Fix bug with string functions
+
 0.27.0
 ------
 - Add MAL tests and test runner (runtests.py)
