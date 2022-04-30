@@ -124,6 +124,14 @@ impl Reader {
             "nil" => Type::Nil,
             "true" => Type::Bool(true),
             "false" => Type::Bool(false),
+            "@" => {
+                self.next();
+                Type::List(vec![
+                    Box::new(Type::Symbol(String::from("deref"))),
+                    Box::new(self.read_form()?),
+                ])
+            }
+
             other => {
                 if let Ok(number) = token.parse() {
                     if token.contains(".") {

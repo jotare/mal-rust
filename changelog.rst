@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.28.0
+------
+- Implement @ macro
+
 0.27.1
 ------
 - Fix bug with string functions
