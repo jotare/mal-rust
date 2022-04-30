@@ -67,7 +67,7 @@ python3 runtest.py mal-tests/step6_file.mal -- target/release/mal-rust
 
 To run all tests, you can use shell regex as in this example:
 ```bash
-for test in $(ls tests/step[2-9A]*); do 
+for test in $(ls mal-tests/step[2-9A]*); do
     python3 runtest.py $test -- target/debug/mal-rust
     sleep 2
 done
