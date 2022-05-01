@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.29.0
+------
+- Add ability to run mal programs by command line and add \*ARGV\*
+  symbol
+
 0.28.0
 ------
 - Implement @ macro

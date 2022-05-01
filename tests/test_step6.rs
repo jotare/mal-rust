@@ -213,8 +213,10 @@ fn testing_that_vector_params_not_broken_by_tco() {
 }
 
 #[test]
-fn testing_that_argv_exists_and_is_an_empty_list() {
+fn testing_that_argv_exists_and_is_an_empty_list() -> Result<(), Box<dyn Error>> {
     let env = Rc::new(Env::new_default());
+    common::load_core(&env)?;
+
     assert_eq!(
         mal_rust::rep("(list? *ARGV*)", &env),
         "true"
@@ -223,6 +225,8 @@ fn testing_that_argv_exists_and_is_an_empty_list() {
         mal_rust::rep("*ARGV*", &env),
         "()"
     );
+
+    Ok(())
 }
 
 #[test]
