@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.30.0
+------
+- Add step 7 mal tests
+
 0.29.0
 ------
 - Add ability to run mal programs by command line and add \*ARGV\*
