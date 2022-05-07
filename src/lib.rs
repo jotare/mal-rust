@@ -188,6 +188,14 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                             continue 'tco
                         }
 
+                        Type::Symbol(symbol) if symbol == "quote" => {
+                            if list.len() != 2 {
+                                return Err("Malformed quote expression. Must pass one parameter".to_string())
+                            }
+
+                            Ok(*list[1].to_owned())
+                        }
+
                         _ => {
                             // eval list and call first item as a
                             // function and the rest as its arguments

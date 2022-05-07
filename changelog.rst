@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.32.0
+------
+- Implement `quote` special form
+
 0.31.0
 ------
 - Implement `cons` and `concat` core functions
