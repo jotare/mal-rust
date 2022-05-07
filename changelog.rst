@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.31.0
+------
+- Implement `cons` and `concat` core functions
+
 0.30.0
 ------
 - Add step 7 mal tests

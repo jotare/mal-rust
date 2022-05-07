@@ -47,6 +47,8 @@ impl Namespace {
         ns.data.insert(String::from("deref"), deref);
         ns.data.insert(String::from("reset!"), reset);
         ns.data.insert(String::from("swap!"), swap);
+        ns.data.insert(String::from("cons"), cons);
+        ns.data.insert(String::from("concat"), concat);
         ns
     }
 }
@@ -354,4 +356,42 @@ fn swap(args: Args) -> Ret {
     *atom.borrow_mut() = new_atom_value.clone();
 
     Ok(new_atom_value)
+}
+
+/// Takes as its second parameter and returns a new list that has the
+/// first argument prepended to it
+///
+/// Example:
+/// (cons 1 (list 2 3)) -> (1 2 3)
+fn cons(args: Args) -> Ret {
+    if args.len() != 2 {
+        return Err("Type error: must pass two arguments to 'cons'".to_string());
+    }
+
+    match (args.get(0), args.get(1)) {
+        (Some(head), Some(Type::List(tail))) | (Some(head), Some(Type::Vector(tail))) => {
+            let mut list = tail.clone();
+            list.insert(0, Box::new(head.to_owned()));
+            Ok(Type::List(list))
+        }
+        _ => Err("Type error: second 'cons' argument must be a sequence".to_string()),
+    }
+}
+
+/// Take 0 or more lists as parameters and returns a new list that is
+/// a concatenation of all the list parameters.
+///
+/// Example:
+/// (concat (list 1 2) (list 3 4)) -> (1 2 3 4)
+fn concat(args: Args) -> Ret {
+    let mut list = Vec::new();
+    for arg in args {
+        match arg {
+            Type::List(arg) | Type::Vector(arg) => {
+                list.extend(arg);
+            }
+            _ => return Err("Type error: 'concat' arguments must be sequences".to_string()),
+        }
+    }
+    Ok(Type::List(list))
 }
