@@ -12,7 +12,7 @@ pub fn escape_string(s: &str) -> String {
         })
         .reduce(|acc, part| acc + &part);
 
-    escaped.unwrap_or(String::new())
+    escaped.unwrap_or_default()
 }
 
 pub fn unescape_string(s: &str) -> String {

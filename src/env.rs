@@ -24,7 +24,7 @@ impl Env {
 
         let env = Env {
             data: RefCell::new(HashMap::new()),
-            outer: outer,
+            outer,
         };
         for i in 0..binds.len() {
             env.set(binds[i], exprs[i].clone());
@@ -80,7 +80,7 @@ impl Env {
                     None => Some(outer.clone()),
                 }
             }
-            None => None
+            None => None,
         }
     }
 

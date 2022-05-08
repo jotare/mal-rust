@@ -159,7 +159,7 @@ fn read_string(args: Args) -> Ret {
             Ok(None) => Err(String::new()),
             Err(e) => Err(e),
         },
-        _ => Err(format!("Type error: must pass a string to read-string")),
+        _ => Err("Type error: must pass a string to read-string".to_string()),
     }
 }
 
@@ -172,14 +172,12 @@ fn slurp(args: Args) -> Ret {
                 .map_err(|e| e.to_string())?;
             Ok(Type::String(contents))
         }
-        _ => Err(format!("Type error: must pass a string to slurp")),
+        _ => Err("Type error: must pass a string to slurp".to_string()),
     }
 }
 
 fn list(args: Args) -> Ret {
-    Ok(Type::List(
-        args.iter().map(|a| Box::new(a.clone())).collect(),
-    ))
+    Ok(Type::List(args.to_vec()))
 }
 
 fn is_list(args: Args) -> Ret {
@@ -192,9 +190,7 @@ fn is_list(args: Args) -> Ret {
 fn is_empty(args: Args) -> Ret {
     match args.get(0) {
         Some(Type::List(seq) | Type::Vector(seq)) => Ok(Type::Bool(seq.len() == 0)),
-        _ => Err(format!(
-            "Type error: 'empty?' is only supported for sequences"
-        )),
+        _ => Err("Type error: 'empty?' is only supported for sequences".to_string()),
     }
 }
 
@@ -202,14 +198,14 @@ fn count(args: Args) -> Ret {
     match args.get(0) {
         Some(Type::List(seq) | Type::Vector(seq)) => Ok(Type::Int(seq.len() as i32)),
         Some(Type::Nil) => Ok(Type::Int(0)),
-        _ => Err(format!("Type error: 'count' is only supported for List")),
+        _ => Err("Type error: 'count' is only supported for List".to_string()),
     }
 }
 
 fn eq(args: Args) -> Ret {
     match (args.get(0), args.get(1)) {
         (Some(a), Some(b)) => Ok(Type::Bool(a == b)),
-        _ => Err(format!("Type error: must pass 2 arguments to '='")),
+        _ => Err("Type error: must pass 2 arguments to '='".to_string()),
     }
 }
 
@@ -220,7 +216,7 @@ fn lt(args: Args) -> Ret {
             let b = b.convert_to_f64()?;
             Ok(Type::Bool(a < b))
         }
-        _ => Err(format!("Type error: must pass 2 arguments to '<'")),
+        _ => Err("Type error: must pass 2 arguments to '<'".to_string()),
     }
 }
 
@@ -231,7 +227,7 @@ fn lte(args: Args) -> Ret {
             let b = b.convert_to_f64()?;
             Ok(Type::Bool(a <= b))
         }
-        _ => Err(format!("Type error: must pass 2 arguments to '<='")),
+        _ => Err("Type error: must pass 2 arguments to '<='".to_string()),
     }
 }
 
@@ -242,7 +238,7 @@ fn gt(args: Args) -> Ret {
             let b = b.convert_to_f64()?;
             Ok(Type::Bool(a > b))
         }
-        _ => Err(format!("Type error: must pass 2 arguments to '>'")),
+        _ => Err("Type error: must pass 2 arguments to '>'".to_string()),
     }
 }
 
@@ -253,14 +249,14 @@ fn gte(args: Args) -> Ret {
             let b = b.convert_to_f64()?;
             Ok(Type::Bool(a >= b))
         }
-        _ => Err(format!("Type error: must pass 2 arguments to '>='")),
+        _ => Err("Type error: must pass 2 arguments to '>='".to_string()),
     }
 }
 
 fn atom(args: Args) -> Ret {
     match args.get(0) {
         Some(a) => Ok(Type::Atom(Rc::new(RefCell::new(a.clone())))),
-        None => Err(format!("Type error: must pass an argument to 'atom'")),
+        None => Err("Type error: must pass an argument to 'atom'".to_string()),
     }
 }
 
@@ -268,29 +264,29 @@ fn atomp(args: Args) -> Ret {
     match args.get(0) {
         Some(Type::Atom(_)) => Ok(Type::Bool(true)),
         Some(_) => Ok(Type::Bool(false)),
-        None => Err(format!("Type error: must pass an argument to 'atom?'")),
+        None => Err("Type error: must pass an argument to 'atom?'".to_string()),
     }
 }
 
 fn deref(args: Args) -> Ret {
     match args.get(0) {
         Some(Type::Atom(atom)) => Ok(atom.borrow().clone()),
-        Some(_) => Err(format!("Type error: must pass an atom to 'deref'")),
-        None => Err(format!("Type error: must pass an argument to 'deref'")),
+        Some(_) => Err("Type error: must pass an atom to 'deref'".to_string()),
+        None => Err("Type error: must pass an argument to 'deref'".to_string()),
     }
 }
 
 fn reset(args: Args) -> Ret {
     match (args.get(0), args.get(1)) {
-        (Some(_), Some(Type::Atom(_))) => Err(format!(
-            "Type error: must pass a non atom type as second parameter"
-        )),
+        (Some(_), Some(Type::Atom(_))) => {
+            Err("Type error: must pass a non atom type as second parameter".to_string())
+        }
         (Some(Type::Atom(atom)), Some(value)) => {
             let mut atom_ref = (**atom).borrow_mut();
             *atom_ref = value.clone();
             Ok(value.clone())
         }
-        _ => Err(format!("Type error: must pass two arguments to 'reset!'")),
+        _ => Err("Type error: must pass two arguments to 'reset!'".to_string()),
     }
 }
 
@@ -304,18 +300,12 @@ fn reset(args: Args) -> Ret {
 /// (swap! atom (fn* (a b) (+ a b)) 10) -- atom is now its old value +10
 fn swap(args: Args) -> Ret {
     if args.len() < 2 {
-        return Err(format!(
-            "Type error: must pass at least two arguments to 'swap!'"
-        ));
+        return Err("Type error: must pass at least two arguments to 'swap!'".to_string());
     }
 
     let (atom, atom_value) = match args.get(0) {
         Some(Type::Atom(a)) => (a, a.borrow().clone()),
-        _ => {
-            return Err(format!(
-                "Type error: first argument to 'swap!' must be an atom"
-            ))
-        }
+        _ => return Err("Type error: first argument to 'swap!' must be an atom".to_string()),
     };
 
     let mut f_args = Vec::with_capacity(1 + args[2..].len());
@@ -331,26 +321,22 @@ fn swap(args: Args) -> Ret {
                 Type::List(ref l) | Type::Vector(ref l) => {
                     let param_list: Vec<&str> = l
                         .iter()
-                        .map(|elem| match **elem {
+                        .map(|elem| match *elem {
                             Type::Symbol(ref sym) => sym.as_str(),
                             _ => "",
                         })
-                        .filter(|elem| elem.len() > 0)
+                        .filter(|elem| !elem.is_empty())
                         .collect();
                     param_list
                 }
-                _ => return Err(format!("Interpreter error: malformed closure!")),
+                _ => return Err("Interpreter error: malformed closure!".to_string()),
             };
 
             let fun_env = Env::new(Some(env.clone()), &params, f_args.as_slice());
 
             eval(*body.to_owned(), &Rc::new(fun_env))?
         }
-        _ => {
-            return Err(format!(
-                "Type error: first argument to 'swap!' must be an function"
-            ))
-        }
+        _ => return Err("Type error: first argument to 'swap!' must be an function".to_string()),
     };
 
     *atom.borrow_mut() = new_atom_value.clone();
@@ -371,7 +357,7 @@ fn cons(args: Args) -> Ret {
     match (args.get(0), args.get(1)) {
         (Some(head), Some(Type::List(tail))) | (Some(head), Some(Type::Vector(tail))) => {
             let mut list = tail.clone();
-            list.insert(0, Box::new(head.to_owned()));
+            list.insert(0, head.to_owned());
             Ok(Type::List(list))
         }
         _ => Err("Type error: second 'cons' argument must be a sequence".to_string()),

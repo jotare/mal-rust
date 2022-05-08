@@ -26,11 +26,11 @@ fn pr_type(t: &Type, print_readably: bool) -> String {
                 s.push_str(&format!("{}.0", float))
             }
         }
-        Type::Symbol(symbol) => s.push_str(&format!("{}", symbol)),
+        Type::Symbol(symbol) => s.push_str(symbol),
         Type::Keyword(keyword) => s.push_str(&format!(":{}", keyword)),
         Type::String(string) => {
             if print_readably {
-                s.push_str(&format!("\"{}\"", escape_string(&string)));
+                s.push_str(&format!("\"{}\"", escape_string(string)));
             } else {
                 s.push_str(string);
             }
@@ -42,10 +42,10 @@ fn pr_type(t: &Type, print_readably: bool) -> String {
             ));
         }
         Type::List(list) => {
-            s.push_str(&format!("({})", pr_seq(&list, print_readably).as_str()));
+            s.push_str(&format!("({})", pr_seq(list, print_readably).as_str()));
         }
         Type::Vector(vector) => {
-            s.push_str(&format!("[{}]", pr_seq(&vector, print_readably).as_str()));
+            s.push_str(&format!("[{}]", pr_seq(vector, print_readably).as_str()));
         }
         Type::HashMap(hashmap) => {
             s.push('{');
@@ -64,7 +64,7 @@ fn pr_type(t: &Type, print_readably: bool) -> String {
     s
 }
 
-fn pr_seq(seq: &Vec<Box<Type>>, print_readably: bool) -> String {
+fn pr_seq(seq: &[Type], print_readably: bool) -> String {
     seq.iter()
         .map(|element| pr_type(&*element, print_readably))
         .collect::<Vec<String>>()

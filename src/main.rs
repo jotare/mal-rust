@@ -6,7 +6,6 @@ use std::rc::Rc;
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 
-use mal_rust;
 use mal_rust::env::Env;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -23,7 +22,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let argv: Vec<String> = std::env::args().skip(1).collect();
 
-    if argv.len() == 0 {        // interactive interpreter
+    if argv.is_empty() {
+        // interactive interpreter
         let prompt = "mal-rust> ";
         let history = ".history";
 
@@ -33,7 +33,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         loop {
-            let input = rl.readline(&prompt);
+            let input = rl.readline(prompt);
             match input {
                 Ok(input) => {
                     if input.trim().is_empty() {
@@ -41,7 +41,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                     rl.add_history_entry(input.as_str());
                     let output = mal_rust::rep(&input, &env);
-                    if output.len() > 0 {
+                    if !output.is_empty() {
                         println!("{}", output);
                     }
                 }
@@ -56,10 +56,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         rl.save_history(&history).unwrap();
-
-    } else {                    // run file
+    } else {
+        // run file
         let script = &argv[0];
-        let def_argv = format!( // redefine *ARGV* with command line args
+        let def_argv = format!(
+            // redefine *ARGV* with command line args
             "(def! *ARGV* (list {}))",
             argv[1..]
                 .iter()

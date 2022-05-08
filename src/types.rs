@@ -14,8 +14,8 @@ pub enum Type {
     Keyword(String),
     String(String),
     Atom(Rc<RefCell<Type>>),
-    List(Vec<Box<Type>>),
-    Vector(Vec<Box<Type>>),
+    List(Vec<Type>),
+    Vector(Vec<Type>),
     HashMap(HashMap<String, Box<Type>>),
     Fun(Function),
     Closure {
@@ -36,17 +36,15 @@ impl Type {
         match self {
             Type::Int(num) => Ok(*num as f64),
             Type::Float(num) => Ok(*num),
-            _ => Err(format!("Type error: type must be a number (Int or Float)")),
+            _ => Err("Type error: type must be a number (Int or Float)".to_string()),
         }
     }
 
     /// Convert type to Vec. Type must be a sequence (List or Vector)
-    pub fn convert_to_vec(&self) -> Result<Vec<Box<Type>>, String> {
+    pub fn convert_to_vec(&self) -> Result<Vec<Type>, String> {
         match self {
             Type::List(seq) | Type::Vector(seq) => Ok(seq.clone()),
-            _ => Err(format!(
-                "Type error: type must be a sequence (List or Vector)"
-            )),
+            _ => Err("Type error: type must be a sequence (List or Vector)".to_string()),
         }
     }
 }

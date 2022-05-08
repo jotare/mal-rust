@@ -34,22 +34,22 @@ impl Reader {
         if self.position < self.tokens.len() {
             Ok(&self.tokens[self.position])
         } else {
-            Err(format!("Syntax error: unexpected EOF while parsing"))
+            Err("Syntax error: unexpected EOF while parsing".to_string())
         }
     }
 
     fn read_form(&mut self) -> Result<Type, String> {
         let token = self.peek()?;
 
-        match token.chars().nth(0).unwrap() {
+        match token.chars().next().unwrap() {
             '(' => Ok(self.read_list()?),
             '[' => Ok(self.read_vector()?),
             '{' => Ok(self.read_hash_map()?),
             '"' => Ok(self.read_string()?),
             ':' => Ok(self.read_keyword()?),
-            ')' => Err(format!("Syntax error: unexpected ')'")),
-            ']' => Err(format!("Syntax error: unexpected ']'")),
-            '}' => Err(format!("Syntax error: unexpected '}}'")),
+            ')' => Err("Syntax error: unexpected ')'".to_string()),
+            ']' => Err("Syntax error: unexpected ']'".to_string()),
+            '}' => Err("Syntax error: unexpected '}}'".to_string()),
             _ => Ok(self.read_atom()?),
         }
     }
@@ -62,7 +62,7 @@ impl Reader {
         Ok(Type::Vector(self.read_seq("]")?))
     }
 
-    fn read_seq(&mut self, end: &str) -> Result<Vec<Box<Type>>, String> {
+    fn read_seq(&mut self, end: &str) -> Result<Vec<Type>, String> {
         let mut items = Vec::new();
 
         self.next(); // skip "(", "["
@@ -73,10 +73,10 @@ impl Reader {
             if item == end {
                 break;
             } else {
-                items.push(Box::new(self.read_form()?));
+                items.push(self.read_form()?);
             }
 
-            if let None = self.next() {
+            if self.next().is_none() {
                 break;
             }
         }
@@ -104,7 +104,7 @@ impl Reader {
                     None => key = Some(item.to_owned()),
                 }
             }
-            if let None = self.next() {
+            if self.next().is_none() {
                 break;
             }
         }
@@ -126,15 +126,12 @@ impl Reader {
             "false" => Type::Bool(false),
             "@" => {
                 self.next();
-                Type::List(vec![
-                    Box::new(Type::Symbol(String::from("deref"))),
-                    Box::new(self.read_form()?),
-                ])
+                Type::List(vec![Type::Symbol(String::from("deref")), self.read_form()?])
             }
 
             other => {
                 if let Ok(number) = token.parse() {
-                    if token.contains(".") {
+                    if token.contains('.') {
                         Type::Float(number)
                     } else {
                         Type::Int(number as i32)
@@ -178,7 +175,7 @@ pub fn tokenize(input: &str) -> Vec<Token> {
         .captures_iter(input)
         .filter_map(|capture| {
             let token = capture[1].to_owned();
-            if token.starts_with(";") {
+            if token.starts_with(';') {
                 // comment
                 None
             } else {
@@ -264,29 +261,29 @@ mod tests {
         assert_eq!(
             read_str("(123 456)"),
             Ok(Some(Type::List(vec![
-                Box::new(Type::Int(123)),
-                Box::new(Type::Int(456)),
+                Type::Int(123),
+                Type::Int(456),
             ])))
         );
 
         assert_eq!(
             read_str("[123 456]"),
             Ok(Some(Type::Vector(vec![
-                Box::new(Type::Int(123)),
-                Box::new(Type::Int(456)),
+                Type::Int(123),
+                Type::Int(456),
             ])))
         );
 
         assert_eq!(
             read_str("( + 2 (* 3 4) )"),
             Ok(Some(Type::List(vec![
-                Box::new(Type::Symbol(String::from("+"))),
-                Box::new(Type::Int(2)),
-                Box::new(Type::List(vec![
-                    Box::new(Type::Symbol(String::from("*"))),
-                    Box::new(Type::Int(3)),
-                    Box::new(Type::Int(4)),
-                ])),
+                Type::Symbol(String::from("+")),
+                Type::Int(2),
+                Type::List(vec![
+                    Type::Symbol(String::from("*")),
+                    Type::Int(3),
+                    Type::Int(4),
+                ]),
             ])))
         );
 

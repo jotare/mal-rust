@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.32.1
+------
+- Improve code using clippy suggestions
+
 0.32.0
 ------
 - Implement `quote` special form
