@@ -181,10 +181,24 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
 
                         Type::Symbol(symbol) if symbol == "quote" => {
                             if list.len() != 2 {
-                                return Err("Malformed quote expression. Must pass one parameter".to_string())
+                                return Err("Malformed quote expression. Must pass one parameter"
+                                    .to_string());
                             }
 
                             Ok(list[1].to_owned())
+                        }
+
+                        Type::Symbol(symbol) if symbol == "quasiquote" => {
+                            tco_values = Some(TcoVals {
+                                ast: Some(quasiquote(list[1].to_owned())?),
+                                env: None,
+                            });
+
+                            continue 'tco;
+                        }
+
+                        Type::Symbol(symbol) if symbol == "quasiquoteexpand" => {
+                            Ok(quasiquote(list[1].to_owned())?)
                         }
 
                         _ => {
@@ -288,6 +302,47 @@ fn eval_ast(ast: Type, env: &Rc<Env>) -> Ret {
             Ok(Type::HashMap(evaluated))
         }
 
+        _ => Ok(ast),
+    }
+}
+
+fn quasiquote(ast: Type) -> Ret {
+    match ast {
+        Type::List(list) => {
+            if list.len() >= 2 && list[0] == Type::Symbol("unquote".to_string()) {
+                Ok(list[1].to_owned())
+            } else {
+                let mut result = Type::List(vec![]);
+                for elt in list.iter().rev() {
+                    if elt.is_list() {
+                        let elt = elt.convert_to_vec()?;
+                        if elt.len() >= 2 && elt[0] == Type::Symbol("splice-unquote".to_string()) {
+                            result = Type::List(vec![
+                                Type::Symbol("concat".to_string()),
+                                elt[1].to_owned(),
+                                result,
+                            ]);
+                        } else {
+                            result = Type::List(vec![
+                                Type::Symbol("cons".to_string()),
+                                quasiquote(Type::List(elt))?,
+                                result,
+                            ]);
+                        }
+                    } else {
+                        result = Type::List(vec![
+                            Type::Symbol("cons".to_string()),
+                            quasiquote(elt.to_owned())?,
+                            result,
+                        ])
+                    }
+                }
+                Ok(result)
+            }
+        }
+        Type::HashMap(_) | Type::Symbol(_) => {
+            Ok(Type::List(vec![Type::Symbol("quote".to_string()), ast]))
+        }
         _ => Ok(ast),
     }
 }

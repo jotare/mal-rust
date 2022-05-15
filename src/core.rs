@@ -34,8 +34,8 @@ impl Namespace {
         ns.data.insert(String::from("read-string"), read_string);
         ns.data.insert(String::from("slurp"), slurp);
         ns.data.insert(String::from("list"), list);
-        ns.data.insert(String::from("list?"), is_list);
-        ns.data.insert(String::from("empty?"), is_empty);
+        ns.data.insert(String::from("list?"), listp);
+        ns.data.insert(String::from("empty?"), emptyp);
         ns.data.insert(String::from("count"), count);
         ns.data.insert(String::from("="), eq);
         ns.data.insert(String::from("<"), lt);
@@ -180,16 +180,16 @@ fn list(args: Args) -> Ret {
     Ok(Type::List(args.to_vec()))
 }
 
-fn is_list(args: Args) -> Ret {
+fn listp(args: Args) -> Ret {
     match args.get(0) {
         Some(Type::List(_)) => Ok(Type::Bool(true)),
         _ => Ok(Type::Bool(false)),
     }
 }
 
-fn is_empty(args: Args) -> Ret {
+fn emptyp(args: Args) -> Ret {
     match args.get(0) {
-        Some(Type::List(seq) | Type::Vector(seq)) => Ok(Type::Bool(seq.len() == 0)),
+        Some(Type::List(seq) | Type::Vector(seq)) => Ok(Type::Bool(seq.is_empty())),
         _ => Err("Type error: 'empty?' is only supported for sequences".to_string()),
     }
 }

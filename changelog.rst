@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.33.0
+------
+- Implement `quasiquote` and `quasiquoteexpand` special forms
+
 0.32.1
 ------
 - Improve code using clippy suggestions

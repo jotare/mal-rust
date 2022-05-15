@@ -47,6 +47,26 @@ impl Type {
             _ => Err("Type error: type must be a sequence (List or Vector)".to_string()),
         }
     }
+
+    pub fn is_symbol(&self) -> bool {
+        matches!(self, Type::Symbol(_))
+    }
+
+    pub fn is_list(&self) -> bool {
+        matches!(self, Type::List(_))
+    }
+
+    pub fn is_vector(&self) -> bool {
+        matches!(self, Type::Vector(_))
+    }
+
+    pub fn is_sequence(&self) -> bool {
+        self.is_list() || self.is_vector()
+    }
+
+    pub fn is_map(&self) -> bool {
+        matches!(self, Type::HashMap(_))
+    }
 }
 
 impl PartialEq for Type {

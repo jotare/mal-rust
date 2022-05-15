@@ -260,18 +260,12 @@ mod tests {
 
         assert_eq!(
             read_str("(123 456)"),
-            Ok(Some(Type::List(vec![
-                Type::Int(123),
-                Type::Int(456),
-            ])))
+            Ok(Some(Type::List(vec![Type::Int(123), Type::Int(456),])))
         );
 
         assert_eq!(
             read_str("[123 456]"),
-            Ok(Some(Type::Vector(vec![
-                Type::Int(123),
-                Type::Int(456),
-            ])))
+            Ok(Some(Type::Vector(vec![Type::Int(123), Type::Int(456),])))
         );
 
         assert_eq!(
