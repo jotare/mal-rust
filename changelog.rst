@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.34.0
+------
+- Implement quoting related reader macros
+
 0.33.0
 ------
 - Implement `quasiquote` and `quasiquoteexpand` special forms

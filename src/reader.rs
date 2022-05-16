@@ -126,7 +126,29 @@ impl Reader {
             "false" => Type::Bool(false),
             "@" => {
                 self.next();
-                Type::List(vec![Type::Symbol(String::from("deref")), self.read_form()?])
+                Type::List(vec![Type::Symbol("deref".to_string()), self.read_form()?])
+            }
+            "'" => {
+                self.next();
+                Type::List(vec![Type::Symbol("quote".to_string()), self.read_form()?])
+            }
+            "`" => {
+                self.next();
+                Type::List(vec![
+                    Type::Symbol("quasiquote".to_string()),
+                    self.read_form()?,
+                ])
+            }
+            "~" => {
+                self.next();
+                Type::List(vec![Type::Symbol("unquote".to_string()), self.read_form()?])
+            }
+            "~@" => {
+                self.next();
+                Type::List(vec![
+                    Type::Symbol("splice-unquote".to_string()),
+                    self.read_form()?,
+                ])
             }
 
             other => {
