@@ -4,6 +4,7 @@ CHANGELOG
 0.35.0
 ------
 - Implement the core function `vec`
+- Improve `quasiquote` and add `vec` in its processing
 
 0.34.0
 ------
