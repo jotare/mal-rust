@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.35.0
+------
+- Implement the core function `vec`
+
 0.34.0
 ------
 - Implement quoting related reader macros

@@ -49,6 +49,7 @@ impl Namespace {
         ns.data.insert(String::from("swap!"), swap);
         ns.data.insert(String::from("cons"), cons);
         ns.data.insert(String::from("concat"), concat);
+        ns.data.insert(String::from("vec"), vec);
         ns
     }
 }
@@ -380,4 +381,14 @@ fn concat(args: Args) -> Ret {
         }
     }
     Ok(Type::List(list))
+}
+
+/// Convert a List into a Vector with the same elements
+fn vec(args: Args) -> Ret {
+    match args.get(0) {
+        Some(Type::List(v)) => Ok(Type::Vector(v.to_owned())),
+        Some(Type::Vector(v)) => Ok(Type::Vector(v.to_owned())),
+        Some(_) => Err("Type error: 'vec' only accepts arguments of sequence types".to_string()),
+        None => Err("Type error: must pass an argument to 'vec'".to_string()),
+    }
 }
