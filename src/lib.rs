@@ -53,13 +53,13 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                                 return Err("def! must be called with 2 arguments".to_string());
                             }
 
-                            let key = match list[1].to_owned() {
-                                Type::Symbol(key) => key,
+                            let name = match list[1].to_owned() {
+                                Type::Symbol(name) => name,
                                 _ => return Err("First def! argument must be a symbol".to_string()),
                             };
                             let value = list[2].to_owned();
                             let value = eval(value, env)?;
-                            env.set(&key, value.clone());
+                            env.set(&name, value.clone());
                             Ok(value)
                         }
 
@@ -202,6 +202,41 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                             Ok(quasiquote(list[1].to_owned())?)
                         }
 
+                        Type::Symbol(symbol) if symbol == "defmacro!" => {
+                            if list.len() != 3 {
+                                return Err("defmacro! must be called with 2 arguments".to_string());
+                            }
+
+                            let name = match list[1].to_owned() {
+                                Type::Symbol(name) => name,
+                                _ => {
+                                    return Err(
+                                        "First defmacro! argument must be a symbol".to_string()
+                                    )
+                                }
+                            };
+
+                            let value = match eval(list[2].to_owned(), env)? {
+                                Type::Closure {
+                                    env, params, body, ..
+                                } => Type::Closure {
+                                    env,
+                                    params,
+                                    body,
+                                    is_macro: true,
+                                },
+                                _ => {
+                                    return Err(
+                                        "Type error defmacro! must be called with a function"
+                                            .to_string(),
+                                    )
+                                }
+                            };
+
+                            env.set(&name, value.clone());
+                            Ok(value)
+                        }
+
                         _ => {
                             // eval list and call first item as a
                             // function and the rest as its arguments
@@ -319,7 +354,7 @@ fn quasiquote_seq(seq: Vec<Type>) -> Ret {
                     list[1].to_owned(),
                     result,
                 ]);
-                continue
+                continue;
             }
         }
         result = Type::List(vec![
@@ -340,12 +375,10 @@ fn quasiquote(ast: Type) -> Ret {
                 quasiquote_seq(list)
             }
         }
-        Type::Vector(vector) => {
-            Ok(Type::List(vec![
-                Type::Symbol("vec".to_string()),
-                quasiquote_seq(vector)?
-            ]))
-        },
+        Type::Vector(vector) => Ok(Type::List(vec![
+            Type::Symbol("vec".to_string()),
+            quasiquote_seq(vector)?,
+        ])),
         Type::HashMap(_) | Type::Symbol(_) => {
             Ok(Type::List(vec![Type::Symbol("quote".to_string()), ast]))
         }
