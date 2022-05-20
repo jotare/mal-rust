@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.36.0
+------
+- Add `is_macro` attribute to closure type
+
 0.35.0
 ------
 - Implement the core function `vec`

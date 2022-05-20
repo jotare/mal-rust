@@ -317,7 +317,7 @@ fn swap(args: Args) -> Ret {
 
     let new_atom_value = match args.get(1) {
         Some(Type::Fun(fun)) => fun(f_args)?,
-        Some(Type::Closure { env, params, body }) => {
+        Some(Type::Closure { env, params, body, .. }) => {
             let params = match **params {
                 Type::List(ref l) | Type::Vector(ref l) => {
                     let param_list: Vec<&str> = l

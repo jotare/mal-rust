@@ -22,6 +22,7 @@ pub enum Type {
         env: Rc<Env>,
         params: Box<Type>,
         body: Box<Type>,
+        is_macro: bool,
     },
 }
 

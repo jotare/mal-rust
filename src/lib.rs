@@ -160,6 +160,7 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                                 params: Box::new(params),
                                 body: Box::new(body),
                                 env: env.clone(),
+                                is_macro: false,
                             };
 
                             Ok(closure)
@@ -221,6 +222,7 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                                     ref params,
                                     ref body,
                                     ref env,
+                                    ..
                                 } => {
                                     let params = match **params {
                                         Type::List(ref l) | Type::Vector(ref l) => {
