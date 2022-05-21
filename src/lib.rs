@@ -386,6 +386,24 @@ fn quasiquote(ast: Type) -> Ret {
     }
 }
 
+fn is_macro_call(ast: &Type, env: &Rc<Env>) -> bool {
+    let mut is_macro_call = false;
+
+    if let Type::List(list) = ast {
+        if let Some(Type::Symbol(sym)) = list.get(0) {
+            is_macro_call = matches!(
+                env.get(sym),
+                Ok(Type::Closure {
+                    is_macro: true,
+                    ..
+                })
+            );
+        }
+    }
+
+    is_macro_call
+}
+
 fn print(ast: Result<Type, String>) -> String {
     match ast {
         Ok(ast) => printer::pr_str(ast, true),

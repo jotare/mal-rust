@@ -5,6 +5,7 @@ CHANGELOG
 ------
 - Add `is_macro` attribute to closure type
 - Add new special form `defmacro!`
+- Add `is_macro_call` function
 
 0.35.0
 ------
