@@ -42,6 +42,8 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
 
         env = &tco_env;
 
+        ast = macroexpand(ast, env)?;
+
         result = match ast {
             Type::List(ref list) => {
                 if list.is_empty() {

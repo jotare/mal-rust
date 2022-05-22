@@ -7,6 +7,7 @@ CHANGELOG
 - Add new special form `defmacro!`
 - Add `is_macro_call` function
 - Add `macroexpand` function
+- Use `macroexpand` before special form switch in eval
 
 0.35.0
 ------
