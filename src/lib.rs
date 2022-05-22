@@ -404,6 +404,26 @@ fn is_macro_call(ast: &Type, env: &Rc<Env>) -> bool {
     is_macro_call
 }
 
+fn macroexpand(ast: Type, env: &Rc<Env>) -> Ret {
+    let mut ast = ast;
+    while is_macro_call(&ast, env) {
+        let list = ast.convert_to_vec()?;
+        let sym = match list[0] {
+            Type::Symbol(ref sym) => sym,
+            _ => return Err("Interpreter error: impossible situation".to_string()),
+        };
+        let macro_fun = env.get(sym)?;
+        let args = if list.len() > 1 {
+            list[1..].to_vec()
+        } else {
+            vec![]
+        };
+        ast = macro_fun.apply(args)?;
+    }
+
+    Ok(ast)
+}
+
 fn print(ast: Result<Type, String>) -> String {
     match ast {
         Ok(ast) => printer::pr_str(ast, true),

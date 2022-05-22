@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::env::Env;
+use crate::eval;
 
 #[derive(Clone, Debug)]
 pub enum Type {
@@ -31,6 +32,41 @@ pub type Ret = Result<Type, String>;
 pub type Function = fn(Args) -> Ret;
 
 impl Type {
+    /// Apply callable with args and return its result. Type must be
+    /// Fun or Closure.
+    pub fn apply(&self, args: Vec<Type>) -> Ret {
+        match self {
+            Type::Fun(fun) => fun(args),
+
+            Type::Closure {
+                ref params,
+                ref body,
+                ref env,
+                ..
+            } => {
+                let params = match **params {
+                    Type::List(ref l) | Type::Vector(ref l) => {
+                        let param_list: Vec<&str> = l
+                            .iter()
+                            .map(|elem| match *elem {
+                                Type::Symbol(ref sym) => sym.as_str(),
+                                _ => "",
+                            })
+                            .filter(|elem| !elem.is_empty())
+                            .collect();
+                        param_list
+                    }
+                    _ => return Err("Interpreter error: malformed closure!".to_string()),
+                };
+
+                let fun_env = Env::new(Some(env.clone()), &params, args.as_slice());
+
+                eval(*body.to_owned(), &Rc::new(fun_env))
+            }
+            _ => Err("Type error: first argument must be a function".to_string()),
+        }
+    }
+
     /// Convert a Type instance to it's f64 representation. Only calls
     /// with types Int or Float will be successful
     pub fn convert_to_f64(&self) -> Result<f64, String> {
