@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.38.0
+------
+- Implement `nth` core function
+
 0.37.0
 ------
 - Improve closure printing

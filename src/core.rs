@@ -50,6 +50,7 @@ impl Namespace {
         ns.data.insert(String::from("cons"), cons);
         ns.data.insert(String::from("concat"), concat);
         ns.data.insert(String::from("vec"), vec);
+        ns.data.insert(String::from("nth"), nth);
         ns
     }
 }
@@ -317,7 +318,9 @@ fn swap(args: Args) -> Ret {
 
     let new_atom_value = match args.get(1) {
         Some(Type::Fun(fun)) => fun(f_args)?,
-        Some(Type::Closure { env, params, body, .. }) => {
+        Some(Type::Closure {
+            env, params, body, ..
+        }) => {
             let params = match **params {
                 Type::List(ref l) | Type::Vector(ref l) => {
                     let param_list: Vec<&str> = l
@@ -390,5 +393,37 @@ fn vec(args: Args) -> Ret {
         Some(Type::Vector(v)) => Ok(Type::Vector(v.to_owned())),
         Some(_) => Err("Type error: 'vec' only accepts arguments of sequence types".to_string()),
         None => Err("Type error: must pass an argument to 'vec'".to_string()),
+    }
+}
+
+/// Take a list/vector and an index and return the element at the
+/// given index. If the index is out of range, raises an error.
+fn nth(args: Args) -> Ret {
+    if args.len() != 2 {
+        return Err("Type error: must pass two arguments to 'nth'".to_string());
+    }
+
+    match (&args[0], &args[1]) {
+        (Type::List(seq), Type::Int(idx)) | (Type::Vector(seq), Type::Int(idx)) => {
+            if *idx < 0 {
+                return Err("Index error: can't use a negative index".to_string());
+            }
+
+            let idx = *idx as usize;
+            if idx >= seq.len() {
+                return Err(format!(
+                    "Index error: index {} is out of bounds for sequence of legth {}",
+                    idx,
+                    seq.len()
+                ));
+            }
+
+            Ok(seq[idx].clone())
+        }
+        (_, Type::Int(_)) => Err("Type error: first argument must be an sequence".to_string()),
+        (Type::List(_), _) | (Type::Vector(_), _) => {
+            Err("Type error: second argument must be an integer".to_string())
+        }
+        _ => Err("Type error: must pass a sequence and an integer".to_string()),
     }
 }
