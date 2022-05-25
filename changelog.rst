@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.37.0
+------
+- Improve closure printing
+
 0.36.0
 ------
 - Add `is_macro` attribute to closure type
