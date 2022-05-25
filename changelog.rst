@@ -3,7 +3,7 @@ CHANGELOG
 
 0.38.0
 ------
-- Implement `nth`, `first` core functions
+- Implement `nth`, `first`, `rest` core functions
 
 0.37.0
 ------

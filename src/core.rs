@@ -52,6 +52,7 @@ impl Namespace {
         ns.data.insert(String::from("vec"), vec);
         ns.data.insert(String::from("nth"), nth);
         ns.data.insert(String::from("first"), first);
+        ns.data.insert(String::from("rest"), rest);
         ns
     }
 }
@@ -450,3 +451,22 @@ fn first(args: Args) -> Ret {
 }
 
 
+/// Takes a list (or vector) as its argument and returns a new list
+/// containing all the elements except the first. If the list (or
+/// vector) is empty or is nil then () (empty list) is returned.
+fn rest(args: Args) -> Ret {
+    if args.len() != 1 {
+        return Err("Type error: must pass an argument to 'rest'".to_string());
+    }
+
+    match &args[0] {
+        Type::List(seq) | Type::Vector(seq) => {
+            if seq.is_empty() {
+                Ok(Type::Nil)
+            } else {
+                Ok(Type::List(seq[1..].to_vec()))
+            }
+        }
+        _ => Ok(Type::Nil)
+    }
+}
