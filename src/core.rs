@@ -51,6 +51,7 @@ impl Namespace {
         ns.data.insert(String::from("concat"), concat);
         ns.data.insert(String::from("vec"), vec);
         ns.data.insert(String::from("nth"), nth);
+        ns.data.insert(String::from("first"), first);
         ns
     }
 }
@@ -427,3 +428,25 @@ fn nth(args: Args) -> Ret {
         _ => Err("Type error: must pass a sequence and an integer".to_string()),
     }
 }
+
+
+/// Takes a list/vector as argument and return its first element. If
+/// list is empty or nil, nil is returned.
+fn first(args: Args) -> Ret {
+    if args.len() != 1 {
+        return Err("Type error: must pass an argument to 'first'".to_string());
+    }
+
+    match &args[0] {
+        Type::List(seq) | Type::Vector(seq) => {
+            if seq.is_empty() {
+                Ok(Type::Nil)
+            } else {
+                Ok(seq[0].clone())
+            }
+        }
+        _ => Ok(Type::Nil)
+    }
+}
+
+
