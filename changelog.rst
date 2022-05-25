@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.40.0
+------
+- Add `cond` macro to core mal definitions
+
 0.39.0
 ------
 - Implement Clojure-style variadic function parameters
