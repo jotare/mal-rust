@@ -239,6 +239,14 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                             Ok(value)
                         }
 
+                        Type::Symbol(symbol) if symbol == "macroexpand" => {
+                            if list.len() != 2 {
+                                return Err("Malformed macroexpand expression. Must pass one parameter".to_string());
+                            }
+
+                            Ok(macroexpand(list[1].to_owned(), env)?)
+                        }
+
                         _ => {
                             // eval list and call first item as a
                             // function and the rest as its arguments

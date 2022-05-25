@@ -8,6 +8,7 @@ CHANGELOG
 - Add `is_macro_call` function
 - Add `macroexpand` function
 - Use `macroexpand` before special form switch in eval
+- Add `macroexpand` special form
 
 0.35.0
 ------
