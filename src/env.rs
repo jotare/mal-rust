@@ -16,19 +16,27 @@ impl Env {
     /// environment. Pass binds and exprs to directly set key-value
     /// pairs in the environment.
     ///
-    /// Panics if binds and exprs don't have the same size
+    /// After a '&', the next parameter will gather the rest of
+    /// arguments in exprs.
+    ///
+    /// Panics if don't pass an argument name after an '&' in binds
     pub fn new(outer: Option<Rc<Env>>, binds: &[&str], exprs: &[Type]) -> Env {
-        if binds.len() != exprs.len() {
-            panic!("`binds` and `exprs` must have the same length");
-        }
-
         let env = Env {
             data: RefCell::new(HashMap::new()),
             outer,
         };
+
         for i in 0..binds.len() {
+            if binds[i] == "&" {
+                if i + 1 >= binds.len() {
+                    panic!("Must pass a variadic parameter name after an &");
+                }
+                env.set(binds[i+1], Type::List(exprs[i..].to_vec()));
+                break;
+            }
             env.set(binds[i], exprs[i].clone());
         }
+
         env
     }
 

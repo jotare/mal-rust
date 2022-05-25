@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.39.0
+------
+- Implement Clojure-style variadic function parameters
+
 0.38.0
 ------
 - Implement `nth`, `first`, `rest` core functions
