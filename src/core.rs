@@ -5,6 +5,8 @@ use std::io::Read;
 use std::rc::Rc;
 
 use crate::env::Env;
+use crate::error;
+use crate::error::Exception;
 use crate::eval;
 use crate::printer::pr_str;
 use crate::reader::read_str;
@@ -67,50 +69,50 @@ impl IntoIterator for Namespace {
 }
 
 fn sum(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a + *b)),
-        (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a + *b as f64)),
-        (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 + *b)),
-        (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a + *b)),
-        _ => Err(String::from(
-            "Type error: '+' is only supported for Int and Float",
-        )),
+    error::nargs_check("+", 2, args.len())?;
+
+    match (&args[0], &args[1]) {
+        (Type::Int(a), Type::Int(b)) => Ok(Type::Int(*a + *b)),
+        (Type::Float(a), Type::Int(b)) => Ok(Type::Float(*a + *b as f64)),
+        (Type::Int(a), Type::Float(b)) => Ok(Type::Float(*a as f64 + *b)),
+        (Type::Float(a), Type::Float(b)) => Ok(Type::Float(*a + *b)),
+        _ => Err(Exception::numeric_fun("+")),
     }
 }
 
 fn sub(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a - *b)),
-        (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a - *b as f64)),
-        (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 - *b)),
-        (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a - *b)),
-        _ => Err(String::from(
-            "Type error: '-' is only supported for Int and Float",
-        )),
+    error::nargs_check("-", 2, args.len())?;
+
+    match (&args[0], &args[1]) {
+        (Type::Int(a), Type::Int(b)) => Ok(Type::Int(*a - *b)),
+        (Type::Float(a), Type::Int(b)) => Ok(Type::Float(*a - *b as f64)),
+        (Type::Int(a), Type::Float(b)) => Ok(Type::Float(*a as f64 - *b)),
+        (Type::Float(a), Type::Float(b)) => Ok(Type::Float(*a - *b)),
+        _ => Err(Exception::numeric_fun("-")),
     }
 }
 
 fn mul(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a * *b)),
-        (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a * *b as f64)),
-        (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 * *b)),
-        (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a * *b)),
-        _ => Err(String::from(
-            "Type error: '*' is only supported for Int and Float",
-        )),
+    error::nargs_check("*", 2, args.len())?;
+
+    match (&args[0], &args[1]) {
+        (Type::Int(a), Type::Int(b)) => Ok(Type::Int(*a * *b)),
+        (Type::Float(a), Type::Int(b)) => Ok(Type::Float(*a * *b as f64)),
+        (Type::Int(a), Type::Float(b)) => Ok(Type::Float(*a as f64 * *b)),
+        (Type::Float(a), Type::Float(b)) => Ok(Type::Float(*a * *b)),
+        _ => Err(Exception::numeric_fun("*")),
     }
 }
 
 fn div(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(Type::Int(a)), Some(Type::Int(b))) => Ok(Type::Int(*a / *b)),
-        (Some(Type::Float(a)), Some(Type::Int(b))) => Ok(Type::Float(*a / *b as f64)),
-        (Some(Type::Int(a)), Some(Type::Float(b))) => Ok(Type::Float(*a as f64 / *b)),
-        (Some(Type::Float(a)), Some(Type::Float(b))) => Ok(Type::Float(*a / *b)),
-        _ => Err(String::from(
-            "Type error: '/' is only supported for Int and Float",
-        )),
+    error::nargs_check("/", 2, args.len())?;
+
+    match (&args[0], &args[1]) {
+        (Type::Int(a), Type::Int(b)) => Ok(Type::Int(*a / *b)),
+        (Type::Float(a), Type::Int(b)) => Ok(Type::Float(*a / *b as f64)),
+        (Type::Int(a), Type::Float(b)) => Ok(Type::Float(*a as f64 / *b)),
+        (Type::Float(a), Type::Float(b)) => Ok(Type::Float(*a / *b)),
+        _ => Err(Exception::numeric_fun("/")),
     }
 }
 
@@ -157,26 +159,30 @@ fn println(args: Args) -> Ret {
 }
 
 fn read_string(args: Args) -> Ret {
-    match args.get(0) {
-        Some(Type::String(input)) => match read_str(input) {
+    error::nargs_check("read-string", 1, args.len())?;
+
+    match &args[0] {
+        Type::String(input) => match read_str(input) {
             Ok(Some(s)) => Ok(s),
-            Ok(None) => Err(String::new()),
-            Err(e) => Err(e),
+            Ok(None) => Err(Exception::builtin("")),
+            Err(e) => Err(Exception::builtin(&e)),
         },
-        _ => Err("Type error: must pass a string to read-string".to_string()),
+        _ => Err(Exception::string_fun("read-string")),
     }
 }
 
 fn slurp(args: Args) -> Ret {
-    match args.get(0) {
-        Some(Type::String(ref filename)) => {
+    error::nargs_check("slurp", 1, args.len())?;
+
+    match &args[0] {
+        Type::String(ref filename) => {
             let mut file = File::open(filename).map_err(|e| e.to_string())?;
             let mut contents = String::new();
             file.read_to_string(&mut contents)
                 .map_err(|e| e.to_string())?;
             Ok(Type::String(contents))
         }
-        _ => Err("Type error: must pass a string to slurp".to_string()),
+        _ => Err(Exception::string_fun("slurp")),
     }
 }
 
@@ -185,112 +191,133 @@ fn list(args: Args) -> Ret {
 }
 
 fn listp(args: Args) -> Ret {
-    match args.get(0) {
-        Some(Type::List(_)) => Ok(Type::Bool(true)),
+    error::nargs_check("list?", 1, args.len())?;
+
+    match &args[0] {
+        Type::List(_) => Ok(Type::Bool(true)),
         _ => Ok(Type::Bool(false)),
     }
 }
 
 fn emptyp(args: Args) -> Ret {
-    match args.get(0) {
-        Some(Type::List(seq) | Type::Vector(seq)) => Ok(Type::Bool(seq.is_empty())),
-        _ => Err("Type error: 'empty?' is only supported for sequences".to_string()),
+    error::nargs_check("empty?", 1, args.len())?;
+
+    match &args[0] {
+        Type::List(seq) | Type::Vector(seq) => Ok(Type::Bool(seq.is_empty())),
+        _ => Err(Exception::seq_fun("empty?")),
     }
 }
 
 fn count(args: Args) -> Ret {
-    match args.get(0) {
-        Some(Type::List(seq) | Type::Vector(seq)) => Ok(Type::Int(seq.len() as i32)),
-        Some(Type::Nil) => Ok(Type::Int(0)),
-        _ => Err("Type error: 'count' is only supported for List".to_string()),
+    error::nargs_check("count", 1, args.len())?;
+
+    match &args[0] {
+        Type::List(seq) | Type::Vector(seq) => Ok(Type::Int(seq.len() as i32)),
+        Type::Nil => Ok(Type::Int(0)),
+        _ => Err(Exception::seq_fun("count")),
     }
 }
 
 fn eq(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(a), Some(b)) => Ok(Type::Bool(a == b)),
-        _ => Err("Type error: must pass 2 arguments to '='".to_string()),
-    }
+    error::nargs_check("=", 2, args.len())?;
+    Ok(Type::Bool(args[0] == args[1]))
 }
 
 fn lt(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(a), Some(b)) => {
-            let a = a.convert_to_f64()?;
-            let b = b.convert_to_f64()?;
-            Ok(Type::Bool(a < b))
-        }
-        _ => Err("Type error: must pass 2 arguments to '<'".to_string()),
+    error::nargs_check("<", 2, args.len())?;
+
+    let a = args[0].convert_to_f64();
+    let b = args[1].convert_to_f64();
+
+    if a.is_err() || b.is_err() {
+        return Err(Exception::numeric_fun("<"));
     }
+    let a = a.unwrap();
+    let b = b.unwrap();
+
+    Ok(Type::Bool(a < b))
 }
 
 fn lte(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(a), Some(b)) => {
-            let a = a.convert_to_f64()?;
-            let b = b.convert_to_f64()?;
-            Ok(Type::Bool(a <= b))
-        }
-        _ => Err("Type error: must pass 2 arguments to '<='".to_string()),
+    error::nargs_check("<=", 2, args.len())?;
+
+    let a = args[0].convert_to_f64();
+    let b = args[1].convert_to_f64();
+
+    if a.is_err() || b.is_err() {
+        return Err(Exception::numeric_fun("<="));
     }
+    let a = a.unwrap();
+    let b = b.unwrap();
+
+    Ok(Type::Bool(a <= b))
 }
 
 fn gt(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(a), Some(b)) => {
-            let a = a.convert_to_f64()?;
-            let b = b.convert_to_f64()?;
-            Ok(Type::Bool(a > b))
-        }
-        _ => Err("Type error: must pass 2 arguments to '>'".to_string()),
+    error::nargs_check(">", 2, args.len())?;
+
+    let a = args[0].convert_to_f64();
+    let b = args[1].convert_to_f64();
+
+    if a.is_err() || b.is_err() {
+        return Err(Exception::numeric_fun(">"));
     }
+    let a = a.unwrap();
+    let b = b.unwrap();
+
+    Ok(Type::Bool(a > b))
 }
 
 fn gte(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(a), Some(b)) => {
-            let a = a.convert_to_f64()?;
-            let b = b.convert_to_f64()?;
-            Ok(Type::Bool(a >= b))
-        }
-        _ => Err("Type error: must pass 2 arguments to '>='".to_string()),
+    error::nargs_check(">=", 2, args.len())?;
+
+    let a = args[0].convert_to_f64();
+    let b = args[1].convert_to_f64();
+
+    if a.is_err() || b.is_err() {
+        return Err(Exception::numeric_fun(">="));
     }
+    let a = a.unwrap();
+    let b = b.unwrap();
+
+    Ok(Type::Bool(a >= b))
 }
 
 fn atom(args: Args) -> Ret {
-    match args.get(0) {
-        Some(a) => Ok(Type::Atom(Rc::new(RefCell::new(a.clone())))),
-        None => Err("Type error: must pass an argument to 'atom'".to_string()),
-    }
+    error::nargs_check("atom", 1, args.len())?;
+    Ok(Type::Atom(Rc::new(RefCell::new(args[0].clone()))))
 }
 
 fn atomp(args: Args) -> Ret {
-    match args.get(0) {
-        Some(Type::Atom(_)) => Ok(Type::Bool(true)),
-        Some(_) => Ok(Type::Bool(false)),
-        None => Err("Type error: must pass an argument to 'atom?'".to_string()),
-    }
+    error::nargs_check("atom?", 1, args.len())?;
+
+    Ok(Type::Bool(matches!(args[0], Type::Atom(_))))
 }
 
 fn deref(args: Args) -> Ret {
-    match args.get(0) {
-        Some(Type::Atom(atom)) => Ok(atom.borrow().clone()),
-        Some(_) => Err("Type error: must pass an atom to 'deref'".to_string()),
-        None => Err("Type error: must pass an argument to 'deref'".to_string()),
+    error::nargs_check("deref", 1, args.len())?;
+
+    match &args[0] {
+        Type::Atom(atom) => Ok(atom.borrow().clone()),
+        _ => Err(Exception::atom_fun("deref")),
     }
 }
 
 fn reset(args: Args) -> Ret {
-    match (args.get(0), args.get(1)) {
-        (Some(_), Some(Type::Atom(_))) => {
-            Err("Type error: must pass a non atom type as second parameter".to_string())
-        }
-        (Some(Type::Atom(atom)), Some(value)) => {
-            let mut atom_ref = (**atom).borrow_mut();
+    error::nargs_check("reset", 2, args.len())?;
+
+    match (&args[0], &args[1]) {
+        (Type::Atom(atom), value) => {
+            let mut atom_ref = (*atom).borrow_mut();
             *atom_ref = value.clone();
             Ok(value.clone())
         }
-        _ => Err("Type error: must pass two arguments to 'reset!'".to_string()),
+        (_, Type::Atom(_)) => Err(Exception::type_error(
+            "Must pass a non atom as second parameter",
+        )),
+        _ => Err(Exception::type_error(
+            "Must pass an atom and a non atom to 'reset'",
+        )),
     }
 }
 
@@ -303,13 +330,15 @@ fn reset(args: Args) -> Ret {
 /// (swap! atom (fn* (a) (* 2 a))) -- atom is now its old value x2
 /// (swap! atom (fn* (a b) (+ a b)) 10) -- atom is now its old value +10
 fn swap(args: Args) -> Ret {
-    if args.len() < 2 {
-        return Err("Type error: must pass at least two arguments to 'swap!'".to_string());
-    }
+    error::nargs_check("swap", 2, args.len()).or(error::nargs_check("swap", 3, args.len()))?;
 
     let (atom, atom_value) = match args.get(0) {
         Some(Type::Atom(a)) => (a, a.borrow().clone()),
-        _ => return Err("Type error: first argument to 'swap!' must be an atom".to_string()),
+        _ => {
+            return Err(Exception::type_error(
+                "first argument to 'swap!' must be an atom",
+            ))
+        }
     };
 
     let mut f_args = Vec::with_capacity(1 + args[2..].len());
@@ -335,14 +364,18 @@ fn swap(args: Args) -> Ret {
                         .collect();
                     param_list
                 }
-                _ => return Err("Interpreter error: malformed closure!".to_string()),
+                _ => return Err(Exception::interpreter_error("malformed closure!")),
             };
 
             let fun_env = Env::new(Some(env.clone()), &params, f_args.as_slice());
 
             eval(*body.to_owned(), &Rc::new(fun_env))?
         }
-        _ => return Err("Type error: first argument to 'swap!' must be an function".to_string()),
+        _ => {
+            return Err(Exception::type_error(
+                "first argument to 'swap!' must be an function",
+            ))
+        }
     };
 
     *atom.borrow_mut() = new_atom_value.clone();
@@ -356,17 +389,17 @@ fn swap(args: Args) -> Ret {
 /// Example:
 /// (cons 1 (list 2 3)) -> (1 2 3)
 fn cons(args: Args) -> Ret {
-    if args.len() != 2 {
-        return Err("Type error: must pass two arguments to 'cons'".to_string());
-    }
+    error::nargs_check("cons", 2, args.len())?;
 
-    match (args.get(0), args.get(1)) {
-        (Some(head), Some(Type::List(tail))) | (Some(head), Some(Type::Vector(tail))) => {
+    match (&args[0], &args[1]) {
+        (head, Type::List(tail)) | (head, Type::Vector(tail)) => {
             let mut list = tail.clone();
             list.insert(0, head.to_owned());
             Ok(Type::List(list))
         }
-        _ => Err("Type error: second 'cons' argument must be a sequence".to_string()),
+        _ => Err(Exception::type_error(
+            "second 'cons' argument must be a sequence",
+        )),
     }
 }
 
@@ -382,7 +415,7 @@ fn concat(args: Args) -> Ret {
             Type::List(arg) | Type::Vector(arg) => {
                 list.extend(arg);
             }
-            _ => return Err("Type error: 'concat' arguments must be sequences".to_string()),
+            _ => return Err(Exception::seq_fun("concat")),
         }
     }
     Ok(Type::List(list))
@@ -390,53 +423,47 @@ fn concat(args: Args) -> Ret {
 
 /// Convert a List into a Vector with the same elements
 fn vec(args: Args) -> Ret {
-    match args.get(0) {
-        Some(Type::List(v)) => Ok(Type::Vector(v.to_owned())),
-        Some(Type::Vector(v)) => Ok(Type::Vector(v.to_owned())),
-        Some(_) => Err("Type error: 'vec' only accepts arguments of sequence types".to_string()),
-        None => Err("Type error: must pass an argument to 'vec'".to_string()),
+    error::nargs_check("vec", 1, args.len())?;
+
+    match &args[0] {
+        Type::List(v) => Ok(Type::Vector(v.to_owned())),
+        Type::Vector(v) => Ok(Type::Vector(v.to_owned())),
+        _ => Err(Exception::type_error(
+            "'vec' only accepts arguments of sequence types",
+        )),
     }
 }
 
 /// Take a list/vector and an index and return the element at the
 /// given index. If the index is out of range, raises an error.
 fn nth(args: Args) -> Ret {
-    if args.len() != 2 {
-        return Err("Type error: must pass two arguments to 'nth'".to_string());
-    }
+    error::nargs_check("nth", 2, args.len())?;
 
     match (&args[0], &args[1]) {
         (Type::List(seq), Type::Int(idx)) | (Type::Vector(seq), Type::Int(idx)) => {
             if *idx < 0 {
-                return Err("Index error: can't use a negative index".to_string());
+                return Err(Exception::negative_index());
             }
 
             let idx = *idx as usize;
             if idx >= seq.len() {
-                return Err(format!(
-                    "Index error: index {} is out of bounds for sequence of legth {}",
-                    idx,
-                    seq.len()
-                ));
+                return Err(Exception::index_out_of_bounds(idx, seq.len()));
             }
 
             Ok(seq[idx].clone())
         }
-        (_, Type::Int(_)) => Err("Type error: first argument must be an sequence".to_string()),
+        (_, Type::Int(_)) => Err(Exception::type_error("first argument must be an sequence")),
         (Type::List(_), _) | (Type::Vector(_), _) => {
-            Err("Type error: second argument must be an integer".to_string())
+            Err(Exception::type_error("second argument must be an integer"))
         }
-        _ => Err("Type error: must pass a sequence and an integer".to_string()),
+        _ => Err(Exception::type_error("must pass a sequence and an integer")),
     }
 }
-
 
 /// Takes a list/vector as argument and return its first element. If
 /// list is empty or nil, nil is returned.
 fn first(args: Args) -> Ret {
-    if args.len() != 1 {
-        return Err("Type error: must pass an argument to 'first'".to_string());
-    }
+    error::nargs_check("first", 1, args.len())?;
 
     match &args[0] {
         Type::List(seq) | Type::Vector(seq) => {
@@ -446,18 +473,15 @@ fn first(args: Args) -> Ret {
                 Ok(seq[0].clone())
             }
         }
-        _ => Ok(Type::Nil)
+        _ => Ok(Type::Nil),
     }
 }
-
 
 /// Takes a list (or vector) as its argument and returns a new list
 /// containing all the elements except the first. If the list (or
 /// vector) is empty or is nil then () (empty list) is returned.
 fn rest(args: Args) -> Ret {
-    if args.len() != 1 {
-        return Err("Type error: must pass an argument to 'rest'".to_string());
-    }
+    error::nargs_check("rest", 1, args.len())?;
 
     match &args[0] {
         Type::List(seq) | Type::Vector(seq) => {
@@ -467,6 +491,6 @@ fn rest(args: Args) -> Ret {
                 Ok(Type::List(seq[1..].to_vec()))
             }
         }
-        _ => Ok(Type::Nil)
+        _ => Ok(Type::Nil),
     }
 }

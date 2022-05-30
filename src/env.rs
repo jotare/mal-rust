@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::core::Namespace;
+use crate::error::Exception;
 use crate::types::Type;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -31,7 +32,7 @@ impl Env {
                 if i + 1 >= binds.len() {
                     panic!("Must pass a variadic parameter name after an &");
                 }
-                env.set(binds[i+1], Type::List(exprs[i..].to_vec()));
+                env.set(binds[i + 1], Type::List(exprs[i..].to_vec()));
                 break;
             }
             env.set(binds[i], exprs[i].clone());
@@ -69,13 +70,19 @@ impl Env {
     /// environment.
     ///
     /// Returns an error if the symbol is not found
-    pub fn get(&self, symbol: &str) -> Result<Type, String> {
+    pub fn get(&self, symbol: &str) -> Result<Type, Exception> {
         match self.find(symbol) {
             Some(env) => match env.data.borrow().get(symbol) {
                 Some(value) => Ok(value.clone()),
-                None => Err(format!("Env should have the symbol '{}'", symbol)),
+                None => Err(Exception::builtin(&format!(
+                    "Env should have the symbol '{}'",
+                    symbol
+                ))),
             },
-            None => Err(format!("Symbol '{}' not found in any environment", symbol)),
+            None => Err(Exception::builtin(&format!(
+                "Symbol '{}' not found in any environment",
+                symbol
+            ))),
         }
     }
 

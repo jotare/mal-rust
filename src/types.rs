@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::env::Env;
+use crate::error::Exception;
 use crate::eval;
 
 #[derive(Clone, Debug)]
@@ -28,7 +29,7 @@ pub enum Type {
 }
 
 pub type Args = Vec<Type>;
-pub type Ret = Result<Type, String>;
+pub type Ret = Result<Type, Exception>;
 pub type Function = fn(Args) -> Ret;
 
 impl Type {
@@ -56,24 +57,26 @@ impl Type {
                             .collect();
                         param_list
                     }
-                    _ => return Err("Interpreter error: malformed closure!".to_string()),
+                    _ => return Err(Exception::interpreter_error("malformed closure")),
                 };
 
                 let fun_env = Env::new(Some(env.clone()), &params, args.as_slice());
 
                 eval(*body.to_owned(), &Rc::new(fun_env))
             }
-            _ => Err("Type error: first argument must be a function".to_string()),
+            _ => Err(Exception::type_error("first argument must be a function")),
         }
     }
 
     /// Convert a Type instance to it's f64 representation. Only calls
     /// with types Int or Float will be successful
-    pub fn convert_to_f64(&self) -> Result<f64, String> {
+    pub fn convert_to_f64(&self) -> Result<f64, Exception> {
         match self {
             Type::Int(num) => Ok(*num as f64),
             Type::Float(num) => Ok(*num),
-            _ => Err("Type error: type must be a number (Int or Float)".to_string()),
+            _ => Err(Exception::type_error(
+                "type must be a number (Int or Float)",
+            )),
         }
     }
 
@@ -114,7 +117,7 @@ impl PartialEq for Type {
             (Nil, Nil) => true,
             (Bool(a), Bool(b)) => a == b,
             (Int(_), Int(_)) | (Int(_), Float(_)) | (Float(_), Int(_)) | (Float(_), Float(_)) => {
-                self.convert_to_f64() == other.convert_to_f64()
+                self.convert_to_f64().unwrap() == other.convert_to_f64().unwrap()
             }
             (Symbol(a), Symbol(b)) => a == b,
             (Keyword(a), Keyword(b)) => a == b,

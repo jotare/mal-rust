@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.41.0
+------
+- Add error module to implement basic exceptions
+- Convert all string errors to exceptions
+
 0.40.0
 ------
 - Add `cond` macro to core mal definitions

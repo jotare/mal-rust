@@ -60,8 +60,12 @@ fn pr_type(t: &Type, print_readably: bool) -> String {
         }
         Type::Fun(_) => s.push_str("#<function>"),
         Type::Closure { params, body, .. } => {
-            s.push_str(&format!("(fn* {} {})", pr_type(params, true), pr_type(body, true)));
-        },
+            s.push_str(&format!(
+                "(fn* {} {})",
+                pr_type(params, true),
+                pr_type(body, true)
+            ));
+        }
     };
     s
 }

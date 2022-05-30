@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use error::{nargs_check, Exception};
+
 use crate::{
     env::Env,
     types::{Ret, Type},
@@ -8,6 +10,7 @@ use crate::{
 
 mod core;
 pub mod env;
+mod error;
 mod printer;
 mod reader;
 mod types;
@@ -51,13 +54,15 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                 } else {
                     match list[0].to_owned() {
                         Type::Symbol(symbol) if symbol == "def!" => {
-                            if list.len() != 3 {
-                                return Err("def! must be called with 2 arguments".to_string());
-                            }
+                            nargs_check("def!", 2, list.len() - 1)?;
 
                             let name = match list[1].to_owned() {
                                 Type::Symbol(name) => name,
-                                _ => return Err("First def! argument must be a symbol".to_string()),
+                                _ => {
+                                    return Err(Exception::type_error(
+                                        "first def! argument must be a symbol",
+                                    ))
+                                }
                             };
                             let value = list[2].to_owned();
                             let value = eval(value, env)?;
@@ -66,29 +71,31 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                         }
 
                         Type::Symbol(symbol) if symbol == "let*" => {
-                            if list.len() != 3 {
-                                return Err("let* must be called with 2 arguments".to_string());
-                            }
+                            nargs_check("let*", 2, list.len() - 1)?;
 
                             let scope_env = Rc::new(Env::new(Some(env.clone()), &[], &[]));
 
                             let binding_list = match list[1].to_owned() {
                                 Type::List(seq) | Type::Vector(seq) => seq,
-                                _ => return Err("First let* argument must be a list".to_string()),
+                                _ => {
+                                    return Err(Exception::type_error(
+                                        "first let* argument must be a list",
+                                    ))
+                                }
                             };
                             if binding_list.len() % 2 != 0 {
-                                return Err(
-                                    "let* binding list must be composed of pairs".to_string()
-                                );
+                                return Err(Exception::builtin(
+                                    "let* binding list must be composed of pairs",
+                                ));
                             }
                             let mut i = 0;
                             while i + 1 < binding_list.len() {
                                 let symbol = match binding_list[i].to_owned() {
                                     Type::Symbol(symbol) => symbol,
                                     _ => {
-                                        return Err(
-                                            "let* variable names must be symbols".to_string()
-                                        )
+                                        return Err(Exception::builtin(
+                                            "let* variable names must be symbols",
+                                        ))
                                     }
                                 };
 
@@ -123,7 +130,7 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
 
                         Type::Symbol(symbol) if symbol == "if" => {
                             if list.len() < 3 || list.len() > 4 {
-                                return Err("Malformed if expression".to_string());
+                                return Err(Exception::builtin("Malformed if expression"));
                             }
 
                             let cond = list.get(1).unwrap().to_owned();
@@ -145,15 +152,14 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                         }
 
                         Type::Symbol(symbol) if symbol == "fn*" => {
-                            if list.len() != 3 {
-                                return Err("Malformed fn* expression".to_string());
-                            }
+                            nargs_check("fn*", 2, list.len() - 1)?;
 
                             let params = match list[1] {
                                 Type::List(_) | Type::Vector(_) => list[1].clone(),
                                 _ => {
-                                    return Err("fn* must be defined with a sequence as parameter"
-                                        .to_string())
+                                    return Err(Exception::builtin(
+                                        "fn* must be defined with a sequence as parameter",
+                                    ))
                                 }
                             };
                             let body = list[2].clone();
@@ -169,10 +175,7 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                         }
 
                         Type::Symbol(symbol) if symbol == "eval" => {
-                            if list.len() != 2 {
-                                return Err("Malformed eval expression. Must pass one parameter"
-                                    .to_string());
-                            }
+                            nargs_check("eval", 1, list.len() - 1)?;
 
                             tco_values = Some(TcoVals {
                                 ast: Some(eval(list[1].to_owned(), env)?),
@@ -183,10 +186,7 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                         }
 
                         Type::Symbol(symbol) if symbol == "quote" => {
-                            if list.len() != 2 {
-                                return Err("Malformed quote expression. Must pass one parameter"
-                                    .to_string());
-                            }
+                            nargs_check("quote", 1, list.len() - 1)?;
 
                             Ok(list[1].to_owned())
                         }
@@ -205,16 +205,14 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                         }
 
                         Type::Symbol(symbol) if symbol == "defmacro!" => {
-                            if list.len() != 3 {
-                                return Err("defmacro! must be called with 2 arguments".to_string());
-                            }
+                            nargs_check("defmacro!", 2, list.len() - 1)?;
 
                             let name = match list[1].to_owned() {
                                 Type::Symbol(name) => name,
                                 _ => {
-                                    return Err(
-                                        "First defmacro! argument must be a symbol".to_string()
-                                    )
+                                    return Err(Exception::type_error(
+                                        "First defmacro! argument must be a symbol",
+                                    ))
                                 }
                             };
 
@@ -228,10 +226,9 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                                     is_macro: true,
                                 },
                                 _ => {
-                                    return Err(
-                                        "Type error defmacro! must be called with a function"
-                                            .to_string(),
-                                    )
+                                    return Err(Exception::type_error(
+                                        "Type error defmacro! must be called with a function",
+                                    ))
                                 }
                             };
 
@@ -240,12 +237,14 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                         }
 
                         Type::Symbol(symbol) if symbol == "macroexpand" => {
-                            if list.len() != 2 {
-                                return Err("Malformed macroexpand expression. Must pass one parameter".to_string());
-                            }
+                            nargs_check("macroexpand", 1, list.len() - 1)?;
 
                             Ok(macroexpand(list[1].to_owned(), env)?)
                         }
+
+                        Type::Symbol(symbol) if symbol == "try*" => Ok(Type::Nil),
+
+                        Type::Symbol(symbol) if symbol == "catch*" => Ok(Type::Nil),
 
                         _ => {
                             // eval list and call first item as a
@@ -253,7 +252,7 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                             let list = eval_ast(ast.clone(), env)?;
                             let list = match list {
                                 Type::List(list) => list,
-                                _ => return Err("Type can't not be a List".to_string()),
+                                _ => return Err(Exception::type_error("Type can't not be a List")),
                             };
 
                             let (f, args) = list.split_first().unwrap();
@@ -282,9 +281,9 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                                             param_list
                                         }
                                         _ => {
-                                            return Err(
-                                                "Interpreter error: malformed closure!".to_string()
-                                            )
+                                            return Err(Exception::interpreter_error(
+                                                "Interpreter error: malformed closure!",
+                                            ))
                                         }
                                     };
 
@@ -298,7 +297,7 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                                     continue 'tco;
                                 }
                                 _ => {
-                                    Err("Type error: first argument must be a function".to_string())
+                                    Err(Exception::type_error("first argument must be a function"))
                                 }
                             }
                         }
@@ -401,13 +400,7 @@ fn is_macro_call(ast: &Type, env: &Rc<Env>) -> bool {
 
     if let Type::List(list) = ast {
         if let Some(Type::Symbol(sym)) = list.get(0) {
-            is_macro_call = matches!(
-                env.get(sym),
-                Ok(Type::Closure {
-                    is_macro: true,
-                    ..
-                })
-            );
+            is_macro_call = matches!(env.get(sym), Ok(Type::Closure { is_macro: true, .. }));
         }
     }
 
@@ -420,7 +413,7 @@ fn macroexpand(ast: Type, env: &Rc<Env>) -> Ret {
         let list = ast.convert_to_vec()?;
         let sym = match list[0] {
             Type::Symbol(ref sym) => sym,
-            _ => return Err("Interpreter error: impossible situation".to_string()),
+            _ => return Err(Exception::interpreter_error("impossible situation")),
         };
         let macro_fun = env.get(sym)?;
         let args = if list.len() > 1 {
@@ -434,10 +427,10 @@ fn macroexpand(ast: Type, env: &Rc<Env>) -> Ret {
     Ok(ast)
 }
 
-fn print(ast: Result<Type, String>) -> String {
+fn print(ast: Result<Type, Exception>) -> String {
     match ast {
         Ok(ast) => printer::pr_str(ast, true),
-        Err(e) => e,
+        Err(e) => e.to_string(),
     }
 }
 
