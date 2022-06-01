@@ -5,6 +5,7 @@ CHANGELOG
 ------
 - Implement `apply` core function
 - Implement `map` core function
+- Add predicate functions: `nil?`, `true?`, `false?` and `symbol?`
 
 0.42.0
 ------

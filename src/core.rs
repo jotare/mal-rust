@@ -58,6 +58,10 @@ impl Namespace {
         ns.data.insert(String::from("throw"), throw);
         ns.data.insert(String::from("apply"), apply);
         ns.data.insert(String::from("map"), map);
+        ns.data.insert(String::from("nil?"), nilp);
+        ns.data.insert(String::from("true?"), truep);
+        ns.data.insert(String::from("false?"), falsep);
+        ns.data.insert(String::from("symbol?"), symbolp);
         ns
     }
 }
@@ -541,4 +545,32 @@ fn map(args: Args) -> Ret {
     }
 
     Ok(Type::List(result))
+}
+
+
+fn nilp(args: Args) -> Ret {
+    error::nargs_check("nil?", 1, args.len())?;
+
+    Ok(Type::Bool(matches!(args[0], Type::Nil)))
+}
+
+
+fn truep(args: Args) -> Ret {
+    error::nargs_check("true?", 1, args.len())?;
+
+    Ok(Type::Bool(matches!(args[0], Type::Bool(true))))
+}
+
+
+fn falsep(args: Args) -> Ret {
+    error::nargs_check("false?", 1, args.len())?;
+
+    Ok(Type::Bool(matches!(args[0], Type::Bool(false))))
+}
+
+
+fn symbolp(args: Args) -> Ret {
+    error::nargs_check("symbol?", 1, args.len())?;
+
+    Ok(Type::Bool(matches!(args[0], Type::Symbol(_))))
 }
