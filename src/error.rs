@@ -43,6 +43,10 @@ impl Exception {
         Exception::type_error(&format!("{} only accepts sequence types", fun_name))
     }
 
+    pub fn map_fun(fun_name: &str) -> Exception {
+        Exception::type_error(&format!("{} only accepts hash map type", fun_name)) 
+    }
+
     pub fn atom_fun(fun_name: &str) -> Exception {
         Exception::type_error(&format!("{} only accepts atom type", fun_name))
     }

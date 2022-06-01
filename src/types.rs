@@ -88,6 +88,13 @@ impl Type {
         }
     }
 
+    pub fn convert_to_map(&self) -> Result<HashMap<String, Box<Type>>, String> {
+        match self {
+            Type::HashMap(hm)=> Ok(hm.clone()),
+            _ => Err("Type error: type must be a hash map".to_string()),
+        }
+    }
+
     pub fn is_symbol(&self) -> bool {
         matches!(self, Type::Symbol(_))
     }
@@ -126,6 +133,11 @@ impl PartialEq for Type {
             | (List(_), Vector(_))
             | (Vector(_), List(_))
             | (Vector(_), Vector(_)) => self.convert_to_vec() == other.convert_to_vec(),
+            (HashMap(a), HashMap(b)) => {
+                a.len() == b.len() && a.iter().all(|(k,v)| {
+                    b.contains_key(k) && *b[k] == **v
+                })
+            }
             _ => false,
         }
     }

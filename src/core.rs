@@ -62,6 +62,20 @@ impl Namespace {
         ns.data.insert(String::from("true?"), truep);
         ns.data.insert(String::from("false?"), falsep);
         ns.data.insert(String::from("symbol?"), symbolp);
+        ns.data.insert(String::from("symbol"), symbol);
+        ns.data.insert(String::from("keyword?"), keywordp);
+        ns.data.insert(String::from("keyword"), keyword);
+        ns.data.insert(String::from("vector?"), vectorp);
+        ns.data.insert(String::from("vector"), vector);
+        ns.data.insert(String::from("sequential?"), sequentialp);
+        ns.data.insert(String::from("hash-map"), hash_map);
+        ns.data.insert(String::from("map?"), mapp);
+        ns.data.insert(String::from("assoc"), assoc);
+        ns.data.insert(String::from("dissoc"), dissoc);
+        ns.data.insert(String::from("get"), get);
+        ns.data.insert(String::from("contains?"), containsp);
+        ns.data.insert(String::from("keys"), keys);
+        ns.data.insert(String::from("vals"), vals);
         ns
     }
 }
@@ -547,13 +561,11 @@ fn map(args: Args) -> Ret {
     Ok(Type::List(result))
 }
 
-
 fn nilp(args: Args) -> Ret {
     error::nargs_check("nil?", 1, args.len())?;
 
     Ok(Type::Bool(matches!(args[0], Type::Nil)))
 }
-
 
 fn truep(args: Args) -> Ret {
     error::nargs_check("true?", 1, args.len())?;
@@ -561,16 +573,213 @@ fn truep(args: Args) -> Ret {
     Ok(Type::Bool(matches!(args[0], Type::Bool(true))))
 }
 
-
 fn falsep(args: Args) -> Ret {
     error::nargs_check("false?", 1, args.len())?;
 
     Ok(Type::Bool(matches!(args[0], Type::Bool(false))))
 }
 
-
 fn symbolp(args: Args) -> Ret {
     error::nargs_check("symbol?", 1, args.len())?;
 
     Ok(Type::Bool(matches!(args[0], Type::Symbol(_))))
+}
+
+/// Convert a String in a symbol with the same content
+fn symbol(args: Args) -> Ret {
+    error::nargs_check("symbol", 1, args.len())?;
+
+    match &args[0] {
+        Type::String(s) => Ok(Type::Symbol(s.to_owned())),
+        _ => Err(Exception::string_fun("symbol")),
+    }
+}
+
+fn keywordp(args: Args) -> Ret {
+    error::nargs_check("keyword?", 1, args.len())?;
+
+    Ok(Type::Bool(matches!(args[0], Type::Keyword(_))))
+}
+
+/// Convert a String in a keyword with the same content
+fn keyword(args: Args) -> Ret {
+    error::nargs_check("keyword", 1, args.len())?;
+
+    match &args[0] {
+        Type::String(s) => Ok(Type::Keyword(s.to_owned())),
+        Type::Keyword(_) => Ok(args[0].to_owned()),
+        _ => Err(Exception::string_fun("keyword")),
+    }
+}
+
+fn vectorp(args: Args) -> Ret {
+    error::nargs_check("vector?", 1, args.len())?;
+
+    Ok(Type::Bool(args[0].is_vector()))
+}
+
+/// Convert a String in a vector with the same content
+fn vector(args: Args) -> Ret {
+    Ok(Type::Vector(args))
+}
+
+fn sequentialp(args: Args) -> Ret {
+    error::nargs_check("sequential?", 1, args.len())?;
+
+    Ok(Type::Bool(args[0].is_sequence()))
+}
+
+fn hash_map(args: Args) -> Ret {
+    if args.len() % 2 != 0 {
+        return Err(Exception::type_error(
+            "must pass an even number of arguments to 'hash-map'",
+        ));
+    }
+
+    let mut hm = HashMap::new();
+
+    if args.len() >= 2 {
+        for i in 0..(args.len() / 2) {
+            let key_idx = i * 2;
+            let value_idx = i * 2 + 1;
+
+            let key = match &args[key_idx] {
+                Type::String(_) | Type::Keyword(_) => pr_str(args[key_idx].to_owned(), true),
+                e => {
+                    println!("Wrong type: {:?}", e);
+                    return Err(Exception::type_error(
+                        "must pass string or keyword as key in a hash map",
+                    ));
+                }
+            };
+            let value = Box::new(args[value_idx].to_owned());
+
+            hm.insert(key, value);
+        }
+    }
+
+    Ok(Type::HashMap(hm))
+}
+
+fn mapp(args: Args) -> Ret {
+    error::nargs_check("map?", 1, args.len())?;
+
+    Ok(Type::Bool(args[0].is_map()))
+}
+
+fn assoc(args: Args) -> Ret {
+    if args.len() < 2 {
+        return Err(Exception::type_error("'assoc' takes at least two argument"));
+    } else if (args.len() - 1) % 2 != 0 {
+        return Err(Exception::type_error(
+            "must pass key value pairs to 'assoc'",
+        ));
+    }
+
+    let mut hm = args[0].convert_to_map()?.clone();
+    for i in 1..(args.len() / 2 + 1) {
+        let key_idx = (i - 1) * 2 + 1;
+        let value_idx = i * 2;
+
+        let key = match &args[key_idx] {
+            Type::String(_) | Type::Keyword(_) => pr_str(args[key_idx].to_owned(), true),
+            _ => {
+                return Err(Exception::type_error(
+                    "must pass string or keyword as key in a hash map (assoc)",
+                ))
+            }
+        };
+        let value = Box::new(args[value_idx].to_owned());
+
+        hm.insert(key, value);
+    }
+
+    Ok(Type::HashMap(hm))
+}
+
+fn dissoc(args: Args) -> Ret {
+    if args.len() < 2 {
+        return Err(Exception::type_error("'assoc' takes at least two argument"));
+    }
+
+    let mut hm = args[0].convert_to_map()?.clone();
+    for i in 1..args.len() {
+        let key = match &args[i] {
+            Type::String(_) | Type::Keyword(_) => pr_str(args[i].to_owned(), true),
+            _ => {
+                return Err(Exception::type_error(
+                    "must pass string or keyword as key in a hash map (dissoc)",
+                ))
+            }
+        };
+        hm.remove(&key);
+    }
+
+    Ok(Type::HashMap(hm))
+}
+
+fn get(args: Args) -> Ret {
+    error::nargs_check("get", 2, args.len())?;
+
+    match (&args[0], &args[1]) {
+        (Type::HashMap(hm), Type::String(_)) | (Type::HashMap(hm), Type::Keyword(_)) => {
+            let key = pr_str(args[1].to_owned(), true);
+            match hm.get(&key) {
+                Some(value) => Ok((**value).to_owned()),
+                None => Ok(Type::Nil),
+            }
+        }
+        (Type::Nil, _) => Ok(Type::Nil),
+        _ => Err(Exception::type_error(
+            "must pass a hash map and a string/keyword as arguments to 'get'",
+        )),
+    }
+}
+
+fn containsp(args: Args) -> Ret {
+    error::nargs_check("contains?", 2, args.len())?;
+
+    match (&args[0], &args[1]) {
+        (Type::HashMap(hm), Type::String(_)) | (Type::HashMap(hm), Type::Keyword(_)) => {
+            let key = pr_str(args[1].to_owned(), true);
+            Ok(Type::Bool(hm.contains_key(&key)))
+        }
+        _ => Err(Exception::type_error(
+            "must pass a hash map and a string/keyword as arguments to 'contains?'",
+        )),
+    }
+}
+
+fn keys(args: Args) -> Ret {
+    error::nargs_check("keys", 1, args.len())?;
+
+    if !args[0].is_map() {
+        return Err(Exception::map_fun("keys"));
+    }
+
+    let hm = args[0].convert_to_map()?;
+    Ok(Type::List(
+        hm.keys()
+            .map(|k| {
+                if k.starts_with(':') {
+                    Type::Keyword(k[1..].to_string())
+                } else {
+                    Type::String(k[1..(k.len() - 1)].to_string())
+                }
+            })
+            .collect::<Vec<Type>>(),
+    ))
+}
+
+fn vals(args: Args) -> Ret {
+    error::nargs_check("keys", 1, args.len())?;
+
+    if !args[0].is_map() {
+        return Err(Exception::map_fun("keys"));
+    }
+
+    let hm = args[0].convert_to_map()?;
+    Ok(Type::List(
+        hm.values().map(|v| (**v).to_owned()).collect::<Vec<Type>>(),
+    ))
 }

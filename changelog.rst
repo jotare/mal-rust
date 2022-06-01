@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+0.44.0
+------
+- Implement new core functions: `symbol`, `keyword?`, `keyword`,
+  `vector?`, `vector`, `sequential?`, `hash-map`, `map?`, `assoc`,
+  `dissoc`, `get`, `contains?`, `keys`, `vals`
+
 0.43.0
 ------
 - Implement `apply` core function
