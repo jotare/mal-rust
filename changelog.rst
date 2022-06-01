@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.42.0
+------
+- Implement `try*/catch*` special forms and `throw` core function
+
 0.41.0
 ------
 - Add error module to implement basic exceptions

@@ -55,6 +55,7 @@ impl Namespace {
         ns.data.insert(String::from("nth"), nth);
         ns.data.insert(String::from("first"), first);
         ns.data.insert(String::from("rest"), rest);
+        ns.data.insert(String::from("throw"), throw);
         ns
     }
 }
@@ -330,7 +331,8 @@ fn reset(args: Args) -> Ret {
 /// (swap! atom (fn* (a) (* 2 a))) -- atom is now its old value x2
 /// (swap! atom (fn* (a b) (+ a b)) 10) -- atom is now its old value +10
 fn swap(args: Args) -> Ret {
-    error::nargs_check("swap", 2, args.len()).or(error::nargs_check("swap", 3, args.len()))?;
+    error::nargs_check("swap", 2, args.len())
+        .or_else(|_| error::nargs_check("swap", 3, args.len()))?;
 
     let (atom, atom_value) = match args.get(0) {
         Some(Type::Atom(a)) => (a, a.borrow().clone()),
@@ -493,4 +495,12 @@ fn rest(args: Args) -> Ret {
         }
         _ => Ok(Type::Nil),
     }
+}
+
+
+/// Take a value and throw it as an exception
+fn throw(args: Args) -> Ret {
+    error::nargs_check("throw", 1, args.len())?;
+
+    Err(Exception::custom(args[0].to_owned()))
 }

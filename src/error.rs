@@ -57,7 +57,7 @@ impl Exception {
 
     pub fn index_out_of_bounds(idx: usize, length: usize) -> Exception {
         Exception::index_error(&format!(
-            "index {} is out of bouns for sequence of length {}",
+            "index {} is out of bounds for sequence of length {}",
             idx, length
         ))
     }
@@ -77,7 +77,7 @@ impl ToString for Exception {
     fn to_string(&self) -> String {
         match self {
             Exception::Builtin(s) => s.to_owned(),
-            Exception::Custom(t) => printer::pr_str(t.to_owned(), true),
+            Exception::Custom(t) => printer::pr_str(t.to_owned(), false),
         }
     }
 }

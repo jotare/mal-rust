@@ -242,9 +242,47 @@ fn eval(ast: Type, env: &Rc<Env>) -> Ret {
                             Ok(macroexpand(list[1].to_owned(), env)?)
                         }
 
-                        Type::Symbol(symbol) if symbol == "try*" => Ok(Type::Nil),
+                        Type::Symbol(symbol) if symbol == "try*" => {
+                            // (try* A (catch* B C))
+                            nargs_check("try*", 2, list.len() - 1)?;
+                            let catch = match list[2].to_owned() {
+                                Type::List(seq) | Type::Vector(seq) => seq,
+                                _ => {
+                                    return Err(Exception::type_error(
+                                        "catch* block must be a list",
+                                    ))
+                                }
+                            };
+                            nargs_check("catch*", 2, catch.len() - 1)?;
 
-                        Type::Symbol(symbol) if symbol == "catch*" => Ok(Type::Nil),
+                            let try_body = list[1].to_owned();
+                            let catch_var = match &catch[1] {
+                                Type::Symbol(s) => s,
+                                _ => return Err(Exception::type_error(
+                                    "First catch* argument must be a symbol",
+                                )),
+                            };
+                            let catch_body = catch[2].to_owned();
+
+                            // try*
+                            let try_result = eval(try_body, env);
+
+                            if try_result.is_ok() {
+                                return try_result;
+                            }
+
+                            let exception = try_result.unwrap_err();
+                            let exception = Type::String(exception.to_string());
+
+                            // catch*
+                            let exc_env = Env::new(
+                                Some(env.clone()),
+                                &[catch_var],
+                                &[exception],
+                            );
+
+                            Ok(eval(catch_body, &Rc::new(exc_env))?)
+                        }
 
                         _ => {
                             // eval list and call first item as a
@@ -430,7 +468,7 @@ fn macroexpand(ast: Type, env: &Rc<Env>) -> Ret {
 fn print(ast: Result<Type, Exception>) -> String {
     match ast {
         Ok(ast) => printer::pr_str(ast, true),
-        Err(e) => e.to_string(),
+        Err(exc) => format!("Error: {}", exc.to_string()),
     }
 }
 
@@ -439,6 +477,6 @@ pub fn rep(input: &str, env: &Rc<Env>) -> String {
     match parsed_input {
         Ok(Some(ast)) => print(eval(ast, env)),
         Ok(None) => String::new(),
-        Err(e) => e,
+        Err(exc) => exc,
     }
 }
