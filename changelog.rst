@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.43.0
+------
+- Implement `apply` core function
+
 0.42.0
 ------
 - Implement `try*/catch*` special forms and `throw` core function

@@ -56,6 +56,7 @@ impl Namespace {
         ns.data.insert(String::from("first"), first);
         ns.data.insert(String::from("rest"), rest);
         ns.data.insert(String::from("throw"), throw);
+        ns.data.insert(String::from("apply"), apply);
         ns
     }
 }
@@ -503,4 +504,24 @@ fn throw(args: Args) -> Ret {
     error::nargs_check("throw", 1, args.len())?;
 
     Err(Exception::custom(args[0].to_owned()))
+}
+
+
+fn apply(args: Args) -> Ret {
+    if args.len() < 2 {
+        return Err(Exception::type_error("'apply' takes at least two argument"));
+    }
+
+
+    let mut arguments = vec![];
+    for arg in args[1..].iter() {
+        match arg {
+            Type::List(seq) | Type::Vector(seq) => {
+                arguments.extend(seq.to_owned())
+            }
+            t => arguments.push(t.to_owned()),
+        }
+    }
+
+    args[0].apply(arguments)
 }
