@@ -4,6 +4,7 @@ CHANGELOG
 0.43.0
 ------
 - Implement `apply` core function
+- Implement `map` core function
 
 0.42.0
 ------

@@ -57,6 +57,7 @@ impl Namespace {
         ns.data.insert(String::from("rest"), rest);
         ns.data.insert(String::from("throw"), throw);
         ns.data.insert(String::from("apply"), apply);
+        ns.data.insert(String::from("map"), map);
         ns
     }
 }
@@ -498,7 +499,6 @@ fn rest(args: Args) -> Ret {
     }
 }
 
-
 /// Take a value and throw it as an exception
 fn throw(args: Args) -> Ret {
     error::nargs_check("throw", 1, args.len())?;
@@ -506,22 +506,39 @@ fn throw(args: Args) -> Ret {
     Err(Exception::custom(args[0].to_owned()))
 }
 
-
 fn apply(args: Args) -> Ret {
     if args.len() < 2 {
         return Err(Exception::type_error("'apply' takes at least two argument"));
     }
 
-
     let mut arguments = vec![];
     for arg in args[1..].iter() {
         match arg {
-            Type::List(seq) | Type::Vector(seq) => {
-                arguments.extend(seq.to_owned())
-            }
+            Type::List(seq) | Type::Vector(seq) => arguments.extend(seq.to_owned()),
             t => arguments.push(t.to_owned()),
         }
     }
 
     args[0].apply(arguments)
+}
+
+fn map(args: Args) -> Ret {
+    error::nargs_check("map", 2, args.len())?;
+
+    let fun = args[0].to_owned();
+    let arguments = match &args[1] {
+        Type::List(seq) | Type::Vector(seq) => seq,
+        _ => {
+            return Err(Exception::type_error(
+                "must pass a function and a list to 'map'",
+            ))
+        }
+    };
+
+    let mut result = vec![];
+    for arg in arguments.iter() {
+        result.push(fun.apply(vec![arg.to_owned()])?);
+    }
+
+    Ok(Type::List(result))
 }
