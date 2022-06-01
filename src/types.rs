@@ -80,6 +80,13 @@ impl Type {
         }
     }
 
+    pub fn convert_to_string(&self) -> Result<String, Exception> {
+        match self {
+            Type::String(s) => Ok(s.to_owned()),
+            _ => Err(Exception::type_error("type must be a string")),
+        }
+    }
+
     /// Convert type to Vec. Type must be a sequence (List or Vector)
     pub fn convert_to_vec(&self) -> Result<Vec<Type>, String> {
         match self {

@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::rc::Rc;
 
 use crate::env::Env;
@@ -76,6 +76,7 @@ impl Namespace {
         ns.data.insert(String::from("contains?"), containsp);
         ns.data.insert(String::from("keys"), keys);
         ns.data.insert(String::from("vals"), vals);
+        ns.data.insert(String::from("readline"), readline);
         ns
     }
 }
@@ -676,7 +677,7 @@ fn assoc(args: Args) -> Ret {
         ));
     }
 
-    let mut hm = args[0].convert_to_map()?.clone();
+    let mut hm = args[0].convert_to_map()?;
     for i in 1..(args.len() / 2 + 1) {
         let key_idx = (i - 1) * 2 + 1;
         let value_idx = i * 2;
@@ -702,7 +703,7 @@ fn dissoc(args: Args) -> Ret {
         return Err(Exception::type_error("'assoc' takes at least two argument"));
     }
 
-    let mut hm = args[0].convert_to_map()?.clone();
+    let mut hm = args[0].convert_to_map()?;
     for i in 1..args.len() {
         let key = match &args[i] {
             Type::String(_) | Type::Keyword(_) => pr_str(args[i].to_owned(), true),
@@ -782,4 +783,23 @@ fn vals(args: Args) -> Ret {
     Ok(Type::List(
         hm.values().map(|v| (**v).to_owned()).collect::<Vec<Type>>(),
     ))
+}
+
+
+fn readline(args: Args) -> Ret {
+    error::nargs_check("readline", 1, args.len())?;
+
+    let prompt = args[0].convert_to_string()?;
+    print!("{}", prompt);
+    if std::io::stdout().flush().is_err() {
+        return Err(Exception::builtin("IOError printing prompt"));
+    };
+
+    let mut line = String::new();
+    std::io::stdin().read_line(&mut line).expect("IOError reading a line");
+    if line.is_empty() {
+        return Ok(Type::Nil);
+    }
+
+    Ok(Type::String(line.trim().to_string()))
 }

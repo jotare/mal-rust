@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.45.0
+------
+- Implement `readline` core function
+
 0.44.0
 ------
 - Implement new core functions: `symbol`, `keyword?`, `keyword`,
