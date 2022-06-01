@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.45.1
+------
+- Fix `rest` core function
+
 0.45.0
 ------
 - Implement `readline` core function

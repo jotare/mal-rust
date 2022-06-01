@@ -509,11 +509,12 @@ fn rest(args: Args) -> Ret {
     match &args[0] {
         Type::List(seq) | Type::Vector(seq) => {
             if seq.is_empty() {
-                Ok(Type::Nil)
+                Ok(Type::List(vec![]))
             } else {
                 Ok(Type::List(seq[1..].to_vec()))
             }
         }
+        Type::Nil => Ok(Type::List(vec![])),
         _ => Ok(Type::Nil),
     }
 }
