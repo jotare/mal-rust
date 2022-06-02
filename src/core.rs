@@ -198,10 +198,21 @@ fn slurp(args: Args) -> Ret {
 
     match &args[0] {
         Type::String(ref filename) => {
-            let mut file = File::open(filename).map_err(|e| e.to_string())?;
+            let mut file = File::open(filename).map_err(|exc| {
+                format!(
+                    "IOError trying to open \"{}\": {}",
+                    filename,
+                    exc.to_string()
+                )
+            })?;
             let mut contents = String::new();
-            file.read_to_string(&mut contents)
-                .map_err(|e| e.to_string())?;
+            file.read_to_string(&mut contents).map_err(|exc| {
+                format!(
+                    "IOError trying to read \"{}\": {}",
+                    filename,
+                    exc.to_string()
+                )
+            })?;
             Ok(Type::String(contents))
         }
         _ => Err(Exception::string_fun("slurp")),
@@ -786,7 +797,6 @@ fn vals(args: Args) -> Ret {
     ))
 }
 
-
 fn readline(args: Args) -> Ret {
     error::nargs_check("readline", 1, args.len())?;
 
@@ -797,7 +807,9 @@ fn readline(args: Args) -> Ret {
     };
 
     let mut line = String::new();
-    std::io::stdin().read_line(&mut line).expect("IOError reading a line");
+    std::io::stdin()
+        .read_line(&mut line)
+        .expect("IOError reading a line");
     if line.is_empty() {
         return Ok(Type::Nil);
     }

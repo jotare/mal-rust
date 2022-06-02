@@ -4,6 +4,7 @@ CHANGELOG
 0.45.2
 ------
 - Fix unbalanced string detection
+- Improve IOError messages
 
 0.45.1
 ------
