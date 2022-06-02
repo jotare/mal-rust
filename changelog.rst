@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.46.1
+------
+- Fix `swap` to accept variable number of arguments
+
 0.46.0
 ------
 - Add `*host-language*` symbol to the REPL
