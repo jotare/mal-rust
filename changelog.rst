@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.46.0
+------
+- Add `*host-language*` symbol to the REPL
+
 0.45.2
 ------
 - Fix unbalanced string detection

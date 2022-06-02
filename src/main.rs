@@ -16,6 +16,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
 
+    mal_rust::rep("(def! *host-language* \"jotare-rust\")", &env);
+
     for line in contents.lines() {
         mal_rust::rep(line, &env);
     }
@@ -31,6 +33,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         if rl.load_history(&history).is_err() {
             println!("Creating history at '{}'", history);
         }
+
+        mal_rust::rep(r#"(println (str "Mal [" *host-language* "]"))"#, &env);
 
         loop {
             let input = rl.readline(prompt);
