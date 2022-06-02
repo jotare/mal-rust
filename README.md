@@ -72,3 +72,19 @@ for test in $(ls mal-tests/step[2-9A]*); do
     sleep 2
 done
 ```
+
+
+#### Self-hosting tests
+
+From the original mal project, inside the mal implementation folder
+(*impls/mal/*) run:
+```
+for file in $(ls ../mal/step[0-9A]*.mal); do
+    file=$(basename ${file})
+    python3 ../../runtest.py ../tests/${file} -- /path/to/mal-rust ../mal/${file}
+    sleep 1;
+done
+```
+
+You may need to change the path to *core.mal* in *main.rs* to an
+absolute path to be able to run `mal-rust` from everywhere.
