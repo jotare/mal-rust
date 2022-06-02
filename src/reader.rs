@@ -3,7 +3,9 @@ use std::collections::HashMap;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-use crate::{types::Type, utils::unescape_string};
+use crate::types::Type;
+use crate::utils::balanced_string;
+use crate::utils::unescape_string;
 
 type Token = String;
 
@@ -45,7 +47,13 @@ impl Reader {
             '(' => Ok(self.read_list()?),
             '[' => Ok(self.read_vector()?),
             '{' => Ok(self.read_hash_map()?),
-            '"' => Ok(self.read_string()?),
+            '"' => {
+                if token.len() >= 2 && token.ends_with('"') && balanced_string(token) {
+                    Ok(self.read_string()?)
+                } else {
+                    Err("Syntax error: unbalanced string".to_string())
+                }
+            }
             ':' => Ok(self.read_keyword()?),
             ')' => Err("Syntax error: unexpected ')'".to_string()),
             ']' => Err("Syntax error: unexpected ']'".to_string()),
@@ -72,9 +80,9 @@ impl Reader {
 
             if item == end {
                 break;
-            } else {
-                items.push(self.read_form()?);
             }
+
+            items.push(self.read_form()?);
 
             if self.next().is_none() {
                 break;
@@ -95,15 +103,16 @@ impl Reader {
 
             if item == "}" {
                 break;
-            } else {
-                match key {
-                    Some(k) => {
-                        hash_map.insert(k, Box::new(self.read_form()?));
-                        key = None
-                    }
-                    None => key = Some(item.to_owned()),
-                }
             }
+
+            match key {
+                Some(k) => {
+                    hash_map.insert(k, Box::new(self.read_form()?));
+                    key = None
+                }
+                None => key = Some(item.to_owned()),
+            }
+
             if self.next().is_none() {
                 break;
             }

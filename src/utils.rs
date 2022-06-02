@@ -30,6 +30,31 @@ pub fn unescape_string(s: &str) -> String {
     unescaped
 }
 
+pub fn balanced_string(s: &str) -> bool {
+    if s.len() < 2 || !s.starts_with('"') || !s.ends_with('"') {
+        return false;
+    }
+
+    let mut backslash = false;
+    let mut t = Vec::with_capacity(2);
+
+    for c in s.chars() {
+        if backslash {
+            backslash = false;
+            continue;
+        }
+
+        backslash = c == '\\';
+
+        if !backslash {
+            t.push(c);
+        }
+    }
+
+    t.len() >= 2 && t[0] == t[t.len() - 1] && t[0] == '"'
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
