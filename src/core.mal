@@ -2,3 +2,13 @@
 (def! load-file (fn* (f) (eval (read-string (str "(do " (slurp f) "\nnil)")))))
 (def! *ARGV* ())                        ; default *ARGV*
 (defmacro! cond (fn* (& xs) (if (> (count xs) 0) (list 'if (first xs) (if (> (count xs) 1) (nth xs 1) (throw "odd number of forms to cond")) (cons 'cond (rest (rest xs)))))))
+
+(def! not-implemented (fn* () (throw "Not implemented")))
+(def! time-ms not-implemented)
+(def! meta not-implemented)
+(def! with-meta not-implemented)
+(def! fn? not-implemented)
+(def! string? not-implemented)
+(def! number? not-implemented)
+(def! seq not-implemented)
+(def! conj not-implemented)

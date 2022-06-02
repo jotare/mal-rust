@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.47.0
+------
+- Add stubs for step A mandatory definitions
+
 0.46.1
 ------
 - Fix `swap` to accept variable number of arguments
