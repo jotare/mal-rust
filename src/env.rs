@@ -80,7 +80,7 @@ impl Env {
                 ))),
             },
             None => Err(Exception::builtin(&format!(
-                "'{}' not found",
+                "symbol '{}' not found",
                 symbol
             ))),
         }
