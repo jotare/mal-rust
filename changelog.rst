@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+1.0.0
+-----
+- Self-hosted MAL implementation achieved!
+
 0.47.0
 ------
 - Add stubs for step A mandatory definitions
