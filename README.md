@@ -78,7 +78,7 @@ done
 
 From the original mal project, inside the mal implementation folder
 (*impls/mal/*) run:
-```
+```bash
 for file in $(ls ../mal/step[0-9A]*.mal); do
     file=$(basename ${file})
     python3 ../../runtest.py ../tests/${file} -- /path/to/mal-rust ../mal/${file}
