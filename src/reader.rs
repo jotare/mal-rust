@@ -165,7 +165,7 @@ impl Reader {
                     if token.contains('.') {
                         Type::Float(number)
                     } else {
-                        Type::Int(number as i32)
+                        Type::Int(number as i64)
                     }
                 } else {
                     Type::Symbol(other.to_owned())

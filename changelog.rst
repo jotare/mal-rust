@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+1.0.1
+-----
+- Int type holds an i64 instead of an i32
+
 1.0.0
 -----
 - Self-hosted MAL implementation achieved!

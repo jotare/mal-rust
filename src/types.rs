@@ -10,7 +10,7 @@ use crate::eval;
 pub enum Type {
     Nil,
     Bool(bool),
-    Int(i32),
+    Int(i64),
     Float(f64),
     Symbol(String),
     Keyword(String),

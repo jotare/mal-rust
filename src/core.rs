@@ -245,7 +245,7 @@ fn count(args: Args) -> Ret {
     error::nargs_check("count", 1, args.len())?;
 
     match &args[0] {
-        Type::List(seq) | Type::Vector(seq) => Ok(Type::Int(seq.len() as i32)),
+        Type::List(seq) | Type::Vector(seq) => Ok(Type::Int(seq.len() as i64)),
         Type::Nil => Ok(Type::Int(0)),
         _ => Err(Exception::seq_fun("count")),
     }
