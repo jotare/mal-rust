@@ -88,3 +88,10 @@ done
 
 You may need to change the path to *core.mal* in *main.rs* to an
 absolute path to be able to run `mal-rust` from everywhere.
+
+
+## Project status
+
+This project has been finished. In it's last version, is able to run
+all tests, self-host the MAL interpretation and also run all tests
+with it (except the metadata deferrable feature).
