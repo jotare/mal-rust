@@ -16,8 +16,10 @@ implementation of MAL as if it were intended to be written only in a
 programming language.
 
 The project follows a linear path, tagging the master branch with the
-steps, but working only with one source code (not one for step). The
-testing is performed exclusively in Rust and can be run using `cargo`.
+steps, but working only with one source code (not one for step). Some
+tests are performed in Rust and can be run using `cargo`. Otherwise,
+the MAL `runtest` script can be used with the test files copied to
+this repository.
 
 ## Usage
 
