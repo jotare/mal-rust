@@ -77,6 +77,13 @@ impl Namespace {
         ns.data.insert(String::from("keys"), keys);
         ns.data.insert(String::from("vals"), vals);
         ns.data.insert(String::from("readline"), readline);
+        ns.data.insert(String::from("time-ms"), time_ms);
+        ns.data.insert(String::from("conj"), conj);
+        ns.data.insert(String::from("string?"), stringp);
+        ns.data.insert(String::from("number?"), numberp);
+        ns.data.insert(String::from("fn?"), fnp);
+        ns.data.insert(String::from("macro?"), macrop);
+        ns.data.insert(String::from("seq"), seq);
         ns
     }
 }
@@ -816,4 +823,87 @@ fn readline(args: Args) -> Ret {
     }
 
     Ok(Type::String(line.trim().to_string()))
+}
+
+fn time_ms(args: Args) -> Ret {
+    error::nargs_check("time-ms", 0, args.len())?;
+
+    use std::time::SystemTime;
+    let since_epoch = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .map_err(|exc| format!("OS error: {}", exc))?
+        .as_secs();
+    Ok(Type::Int(since_epoch as i64))
+}
+
+fn conj(args: Args) -> Ret {
+    match &args[0] {
+        Type::List(list) => Ok(Type::List(
+            args[1..]
+                .iter()
+                .rev()
+                .chain(list.iter())
+                .map(|t| t.to_owned())
+                .collect::<Vec<Type>>(),
+        )),
+
+        Type::Vector(vector) => Ok(Type::Vector(
+            vector
+                .iter()
+                .chain(args[1..].iter())
+                .map(|t| t.to_owned())
+                .collect::<Vec<Type>>(),
+        )),
+
+        _ => Ok(Type::Nil),
+    }
+}
+
+fn stringp(args: Args) -> Ret {
+    error::nargs_check("string?", 1, args.len())?;
+
+    Ok(Type::Bool(args[0].is_string()))
+}
+
+fn numberp(args: Args) -> Ret {
+    error::nargs_check("number?", 1, args.len())?;
+
+    Ok(Type::Bool(args[0].is_number()))
+}
+
+fn fnp(args: Args) -> Ret {
+    error::nargs_check("fn?", 1, args.len())?;
+
+    Ok(Type::Bool(args[0].is_callable()))
+}
+
+fn macrop(args: Args) -> Ret {
+    error::nargs_check("macro?", 1, args.len())?;
+
+    Ok(Type::Bool(args[0].is_macro()))
+}
+
+fn seq(args: Args) -> Ret {
+    error::nargs_check("seq", 1, args.len())?;
+
+    match &args[0] {
+        Type::Nil => Ok(Type::Nil),
+
+        Type::List(l) if l.is_empty() => Ok(Type::Nil),
+        Type::List(_) => Ok(args[0].to_owned()),
+
+        Type::String(s) if s.is_empty() => Ok(Type::Nil),
+        Type::String(s) => Ok(Type::List(
+            s.chars()
+                .map(|c| Type::String(c.to_string()))
+                .collect::<Vec<Type>>(),
+        )),
+
+        Type::Vector(v) if v.is_empty() => Ok(Type::Nil),
+        Type::Vector(v) => Ok(Type::List(v.to_owned())),
+
+        _ => Err(Exception::type_error(
+            "Must pass a list, vector, string or nil to 'seq'",
+        )),
+    }
 }

@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.2.0
+-----
+- Implement core functions: `time-ms`, `conj`, `string?`, `number?`,
+  `fn?`, `macro?`, `seq`
+
 1.1.0
 -----
 - Implement more type checking functions to `Type`
