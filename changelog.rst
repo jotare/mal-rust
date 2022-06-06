@@ -5,6 +5,7 @@ CHANGELOG
 -----
 - Implement core functions: `time-ms`, `conj`, `string?`, `number?`,
   `fn?`, `macro?`, `seq`
+- Add stubs for `meta` and `with-meta`
 
 1.1.0
 -----
