@@ -102,6 +102,18 @@ impl Type {
         }
     }
 
+    pub fn is_integer(&self) -> bool {
+        matches!(self, Type::Int(_))
+    }
+
+    pub fn is_decimal(&self) -> bool {
+        matches!(self, Type::Float(_))
+    }
+
+    pub fn is_number(&self) -> bool {
+        self.is_integer() || self.is_decimal()
+    }
+
     pub fn is_symbol(&self) -> bool {
         matches!(self, Type::Symbol(_))
     }
@@ -118,8 +130,23 @@ impl Type {
         self.is_list() || self.is_vector()
     }
 
+    pub fn is_string(&self) -> bool {
+        matches!(self, Type::String(_))
+    }
+
     pub fn is_map(&self) -> bool {
         matches!(self, Type::HashMap(_))
+    }
+
+    pub fn is_callable(&self) -> bool {
+        matches!(self, Type::Fun(_)) || matches!(self, Type::Closure { is_macro: false, .. })
+    }
+
+    pub fn is_macro(&self) -> bool {
+        match self {
+            Type::Closure { is_macro: true, .. } => true,
+            _ => false,
+        }
     }
 }
 

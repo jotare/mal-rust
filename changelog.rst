@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+1.1.0
+-----
+- Implement more type checking functions to `Type`
+
 1.0.1
 -----
 - Int type holds an i64 instead of an i32
